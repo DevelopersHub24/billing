@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen bg-[#FFFBFB]">
+    <div class="w-full max-w-sm p-6 bg-white shadow-xl rounded-2xl">
+        <h2 class="text-center text-2xl font-bold text-[#003F59]">Admin Login</h2>
+
+        <!-- Flash Messages -->
+        <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mt-4">
+                    {% for category, message in messages %}
+                        <p class="text-sm p-2 rounded-lg text-white 
+                        {% if category == 'success' %} bg-green-500 
+                        {% else %} bg-red-500 {% endif %}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %} -->
+
+        <form method="post" class="mt-6">
+            <label class="block text-sm font-semibold text-gray-600">User ID</label>
+            <input type="text" name="userid" required 
+                   class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003F59]">
+            
+            <label class="block mt-4 text-sm font-semibold text-gray-600">Password</label>
+            <input type="password" name="password" required 
+                   class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#933449]">
+
+            <button type="submit" class="w-full mt-6 bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#933449] transition">
+                Login
+            </button>
+        </form>
+    </div>
+</body>
+</html>

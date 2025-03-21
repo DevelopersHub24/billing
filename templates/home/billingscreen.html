@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#FFFBFB] p-6">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6">
+        <h2 class="text-2xl font-bold text-[#003F59] text-center mb-4">Billing System</h2>
+
+        <!-- Search & Add Item -->
+        <div class="flex space-x-2">
+            <input id="itemName" type="text" placeholder="Enter Item Name" class="flex-1 px-3 py-2 border rounded-lg">
+            <input id="itemPrice" type="number" placeholder="Price" class="w-24 px-3 py-2 border rounded-lg">
+            <input id="itemQty" type="number" placeholder="Qty" class="w-20 px-3 py-2 border rounded-lg">
+            <button onclick="addItem()" class="bg-[#003F59] text-white px-4 py-2 rounded-lg hover:bg-[#933449]">
+                Add
+            </button>
+        </div>
+
+        <!-- Billing Table -->
+        <div class="mt-4 overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-[#EBAD76] text-white">
+                    <tr>
+                        <th class="p-2">Item</th>
+                        <th class="p-2">Price</th>
+                        <th class="p-2">Qty</th>
+                        <th class="p-2">Total</th>
+                        <th class="p-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="billTable" class="bg-white"></tbody>
+            </table>
+        </div>
+
+        <!-- Billing Summary -->
+        <div class="mt-6">
+            <label class="text-sm font-semibold">Discount %:</label>
+            <input id="discount" type="number" value="0" oninput="updateTotal()" class="w-24 px-2 py-1 border rounded-lg">
+            
+            <p class="mt-2 text-lg font-bold">Subtotal: <span id="subtotal">0</span> ₹</p>
+            <p class="text-lg font-bold">Discount: <span id="discountAmt">0</span> ₹</p>
+            <p class="text-lg font-bold text-[#933449]">Total: <span id="total">0</span> ₹</p>
+        </div>
+
+        <!-- Checkout Button -->
+        <button class="w-full mt-4 bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#933449]">
+            Print Bill
+        </button>
+    </div>
+
+    <script>
+        let cart = [];
+
+        function addItem() {
+            let itemName = document.getElementById('itemName').value;
+            let itemPrice = parseFloat(document.getElementById('itemPrice').value);
+            let itemQty = parseInt(document.getElementById('itemQty').value);
+
+            if (itemName && itemPrice > 0 && itemQty > 0) {
+                cart.push({ name: itemName, price: itemPrice, qty: itemQty, total: itemPrice * itemQty });
+                updateTable();
+            }
+        }
+
+        function updateTable() {
+            let table = document.getElementById('billTable');
+            table.innerHTML = "";
+            cart.forEach((item, index) => {
+                table.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-2">${item.name}</td>
+                        <td class="p-2">${item.price} ₹</td>
+                        <td class="p-2">${item.qty}</td>
+                        <td class="p-2">${item.total} ₹</td>
+                        <td class="p-2">
+                            <button onclick="removeItem(${index})" class="text-red-500">X</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            updateTotal();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateTable();
+        }
+
+        function updateTotal() {
+            let subtotal = cart.reduce((sum, item) => sum + item.total, 0);
+            let discountPercent = parseFloat(document.getElementById('discount').value);
+            let discountAmt = (subtotal * discountPercent) / 100;
+            let total = subtotal - discountAmt;
+
+            document.getElementById('subtotal').innerText = subtotal;
+            document.getElementById('discountAmt').innerText = discountAmt;
+            document.getElementById('total').innerText = total;
+        }
+    </script>
+
+</body>
+</html>
