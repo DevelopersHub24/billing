@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Shop Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<style>
+    /* Sidebar styles */
+    .dropdown-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+    
+    .dropdown-content.show {
+        max-height: 500px;
+        overflow-y: auto;
+        transition: max-height 0.5s ease-in;
+    }
+    
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+    }
+    
+    .dropdown-arrow.rotate-180 {
+        transform: rotate(180deg);
+    }
+    
+    #sidebar {
+        transition: transform 0.3s ease-in-out;
+        z-index: 50;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #EBAD76 0%, #e0a068 100%);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        width: 280px;
+    }
+    
+    .sidebar-item {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin: 0 8px;
+    }
+    
+    .sidebar-item:hover {
+        background-color: rgba(255, 251, 251, 0.8);
+        transform: translateX(4px);
+    }
+    
+    .sidebar-item.active {
+        background-color: #FFFBFB;
+        font-weight: 600;
+        color: #003F59;
+    }
+    
+    #sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 40;
+        transition: opacity 0.3s ease;
+    }
+    
+    #sidebar-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+    
+    /* Inventory specific styles */
+    .inventory-card {
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .inventory-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .low-stock {
+        border-left: 4px solid #ef4444;
+    }
+    
+    .out-of-stock {
+        border-left: 4px solid #dc2626;
+    }
+    
+    .in-stock {
+        border-left: 4px solid #10b981;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+    }
+    
+    /* Tab styles */
+    .tab-active {
+        border-bottom: 2px solid #003F59;
+        color: #003F59;
+        font-weight: 600;
+    }
+</style>
+
+<body class="bg-[#FFFBFB]">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-[#003F59] to-[#005577] text-white p-4 flex justify-between items-center rounded-b-3xl sticky top-0 z-30">
+        <button onclick="toggleSidebar()" class="lg:hidden text-white text-2xl focus:outline-none">
+            <i class="ph ph-list"></i>
+        </button>
+        <h1 class="text-xl font-bold flex-1 text-center">Inventory Management System</h1>
+        <div class="flex items-center space-x-4">
+            <div class="relative">
+                <button onclick="toggleShopDropdown()" class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full flex items-center">
+                    <i class="ph ph-storefront mr-1"></i> 
+                    <span id="currentShop">Main Store</span>
+                    <i id="shopDropdownArrow" class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="shopDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeShop('Main Store')">Main Store</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeShop('Downtown Branch')">Downtown Branch</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeShop('Mall Outlet')">Mall Outlet</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="changeShop('Warehouse')">Warehouse</a>
+                    <div class="border-t border-gray-200"></div>
+                    <a href="#" class="block px-4 py-2 text-sm text-[#003F59] hover:bg-gray-100" onclick="showAddShopModal()">
+                        <i class="ph ph-plus"></i> Add New Shop
+                    </a>
+                </div>
+            </div>
+            <button class="lobutton flex items-center" onclick="logout()">
+                <i class="ph ph-sign-out mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebar-overlay" class="lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar"
+        class="fixed top-0 left-0 h-full shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-4 border-b border-[#d99a60] flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-3">
+                    <i class="ph ph-storefront text-xl"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-[#003F59]">Menu</h2>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-[#003F59] text-xl focus:outline-none">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <ul class="mt-4 space-y-1 px-2">
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('dashboard')">
+                    <i class="ph ph-house mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Dashboard</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('sales')">
+                    <i class="ph ph-receipt mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Sales</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item active">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('inventory')">
+                    <i class="ph ph-archive-box mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Inventory</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('reports')">
+                    <i class="ph ph-chart-bar mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Reports</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('settings')">
+                    <i class="ph ph-gear mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Settings</span>
+                </div>
+            </li>
+        </ul>
+        
+        <!-- Sidebar footer -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#d99a60] bg-[#e0a068]">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-2">
+                    <i class="ph ph-user text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-[#003F59]">Admin User</p>
+                    <p class="text-xs text-[#003F59] opacity-80">admin@example.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-[280px] p-6 transition-all duration-300">
+        <div class="max-w-7xl mx-auto">
+            <!-- Inventory Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-[#003F59]">Inventory Management</h2>
+                    <p class="text-gray-600">Current location: <span id="currentShopLocation" class="font-medium">Main Store - 123 Main St</span></p>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <button onclick="showAddItemModal()" class="bg-[#003F59] text-white px-4 py-2 rounded-lg hover:bg-[#933449] flex items-center">
+                        <i class="ph ph-plus mr-1"></i> Add Item
+                    </button>
+                    <button onclick="showTransferModal()" class="bg-[#EBAD76] text-[#003F59] px-4 py-2 rounded-lg hover:bg-[#e0a068] flex items-center">
+                        <i class="ph ph-arrows-left-right mr-1"></i> Transfer Stock
+                    </button>
+                    <button onclick="exportInventory()" class="bg-white border border-[#003F59] text-[#003F59] px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center">
+                        <i class="ph ph-export mr-1"></i> Export
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Inventory Tabs -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-8">
+                    <button id="allItemsTab" onclick="changeTab('all')" class="tab-active py-4 px-1 text-sm font-medium">
+                        All Items
+                    </button>
+                    <button id="lowStockTab" onclick="changeTab('low')" class="py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        Low Stock
+                    </button>
+                    <button id="outOfStockTab" onclick="changeTab('out')" class="py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        Out of Stock
+                    </button>
+                    <button id="categoriesTab" onclick="changeTab('categories')" class="py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        Categories
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <div class="relative">
+                        <input type="text" id="inventorySearch" placeholder="Search items..." 
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <button class="absolute right-3 top-2.5 text-gray-500">
+                            <i class="ph ph-magnifying-glass"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <select id="categoryFilter" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <option value="">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="groceries">Groceries</option>
+                        <option value="furniture">Furniture</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="sortBy" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="name_desc">Name (Z-A)</option>
+                        <option value="stock_asc">Stock (Low-High)</option>
+                        <option value="stock_desc">Stock (High-Low)</option>
+                        <option value="price_asc">Price (Low-High)</option>
+                        <option value="price_desc">Price (High-Low)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Inventory Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Items</p>
+                            <p class="text-2xl font-bold mt-1">1,248</p>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <i class="ph ph-package text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Across all categories</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Value</p>
+                            <p class="text-2xl font-bold mt-1">₹2,48,756</p>
+                        </div>
+                        <div class="bg-green-100 p-2 rounded-lg">
+                            <i class="ph ph-currency-rupee text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Current inventory value</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Low Stock</p>
+                            <p class="text-2xl font-bold mt-1">42</p>
+                        </div>
+                        <div class="bg-yellow-100 p-2 rounded-lg">
+                            <i class="ph ph-warning text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Items below threshold</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Out of Stock</p>
+                            <p class="text-2xl font-bold mt-1">18</p>
+                        </div>
+                        <div class="bg-red-100 p-2 rounded-lg">
+                            <i class="ph ph-x-circle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Items needing restock</p>
+                </div>
+            </div>
+            
+            <!-- Inventory Table -->
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-[#EBAD76]">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    Item
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    Category
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    SKU
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    Price
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    Stock
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-[#003F59] uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Sample data rows - in a real app this would be dynamic -->
+                            <tr class="inventory-card in-stock hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                                            <i class="ph ph-device-mobile text-gray-600"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">Smartphone X</div>
+                                            <div class="text-sm text-gray-500">Model 2023</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">Electronics</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">SKU-EL-1001</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">₹24,999</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">48</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="status-badge bg-green-100 text-green-800">In Stock</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onclick="editItem('1')" class="text-[#003F59] hover:text-[#933449] mr-3">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                    <button onclick="deleteItem('1')" class="text-red-600 hover:text-red-900">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="inventory-card low-stock hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                                            <i class="ph ph-t-shirt text-gray-600"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">Cotton T-Shirt</div>
+                                            <div class="text-sm text-gray-500">Large, Black</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">Clothing</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">SKU-CL-2042</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">₹599</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">3</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="status-badge bg-yellow-100 text-yellow-800">Low Stock</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onclick="editItem('2')" class="text-[#003F59] hover:text-[#933449] mr-3">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                    <button onclick="deleteItem('2')" class="text-red-600 hover:text-red-900">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="inventory-card out-of-stock hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                                            <i class="ph ph-hamburger text-gray-600"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">Organic Coffee</div>
+                                            <div class="text-sm text-gray-500">500g Pack</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">Groceries</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">SKU-GR-3056</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">₹349</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">0</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="status-badge bg-red-100 text-red-800">Out of Stock</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onclick="editItem('3')" class="text-[#003F59] hover:text-[#933449] mr-3">
+                                        <i class="ph ph-pencil-simple"></i>
+                                    </button>
+                                    <button onclick="deleteItem('3')" class="text-red-600 hover:text-red-900">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- More rows would be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </a>
+                        <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </a>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">1248</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <i class="ph ph-caret-left"></i>
+                                </a>
+                                <a href="#" aria-current="page" class="z-10 bg-[#003F59] border-[#003F59] text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    1
+                                </a>
+                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    2
+                                </a>
+                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    3
+                                </a>
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    ...
+                                </span>
+                                <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    8
+                                </a>
+                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <i class="ph ph-caret-right"></i>
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Inventory Item</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="itemName" class="block text-sm font-medium text-gray-700">Item Name</label>
+                                    <input type="text" id="itemName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="itemSKU" class="block text-sm font-medium text-gray-700">SKU</label>
+                                    <input type="text" id="itemSKU" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="itemCategory" class="block text-sm font-medium text-gray-700">Category</label>
+                                    <select id="itemCategory" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                        <option value="">Select Category</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="clothing">Clothing</option>
+                                        <option value="groceries">Groceries</option>
+                                        <option value="furniture">Furniture</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="itemPrice" class="block text-sm font-medium text-gray-700">Price (₹)</label>
+                                    <input type="number" id="itemPrice" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="itemStock" class="block text-sm font-medium text-gray-700">Initial Stock</label>
+                                    <input type="number" id="itemStock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="itemThreshold" class="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
+                                    <input type="number" id="itemThreshold" value="5" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="itemDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                                    <textarea id="itemDescription" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="saveNewItem()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#003F59] text-base font-medium text-white hover:bg-[#005577] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:ml-3 sm:w-auto sm:text-sm">
+                        Save Item
+                    </button>
+                    <button type="button" onclick="hideAddItemModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Stock Modal -->
+    <div id="transferModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Transfer Stock Between Shops</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="transferFrom" class="block text-sm font-medium text-gray-700">From Shop</label>
+                                    <select id="transferFrom" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                        <option value="main">Main Store</option>
+                                        <option value="downtown">Downtown Branch</option>
+                                        <option value="mall">Mall Outlet</option>
+                                        <option value="warehouse">Warehouse</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="transferTo" class="block text-sm font-medium text-gray-700">To Shop</label>
+                                    <select id="transferTo" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                        <option value="downtown">Downtown Branch</option>
+                                        <option value="main">Main Store</option>
+                                        <option value="mall">

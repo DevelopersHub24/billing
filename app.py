@@ -47,12 +47,12 @@ def login():
 @app.route('/home/dashboard')
 def dashboard():
     if 'loggedin' in session:
-        return render_template("home/dashboard.html", name=session['name'])
+        return render_template("home/home.html", name=session['name'])
     return redirect(url_for('login'))
 
 
-@app.route('/home/billing')
-def billing():
+@app.route('/home/billing/sales')
+def sales_bill():
     if 'loggedin' in session:
         return render_template("home/billingscreen.html", name=session['name'])
     return redirect(url_for('login'))

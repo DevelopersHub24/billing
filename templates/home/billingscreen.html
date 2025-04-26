@@ -1,107 +1,696 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Billing System</title>
+    <title>Sales Billing System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-<body class="bg-[#FFFBFB] p-6">
 
-    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6">
-        <h2 class="text-2xl font-bold text-[#003F59] text-center mb-4">Billing System</h2>
+<style>
+    /* Sidebar styles */
+    .dropdown-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+    
+    .dropdown-content.show {
+        max-height: 500px;
+        overflow-y: auto;
+        transition: max-height 0.5s ease-in;
+    }
+    
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+    }
+    
+    .dropdown-arrow.rotate-180 {
+        transform: rotate(180deg);
+    }
+    
+    #sidebar {
+        transition: transform 0.3s ease-in-out;
+        z-index: 50;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #EBAD76 0%, #e0a068 100%);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        width: 280px;
+    }
+    
+    .sidebar-item {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin: 0 8px;
+    }
+    
+    .sidebar-item:hover {
+        background-color: rgba(255, 251, 251, 0.8);
+        transform: translateX(4px);
+    }
+    
+    .sidebar-item.active {
+        background-color: #FFFBFB;
+        font-weight: 600;
+        color: #003F59;
+    }
+    
+    .submenu-item {
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+    }
+    
+    .submenu-item:hover {
+        background-color: rgba(255, 251, 251, 0.6);
+        border-left-color: #003F59;
+        padding-left: 12px;
+    }
+    
+    #sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 40;
+        transition: opacity 0.3s ease;
+    }
+    
+    #sidebar-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+    
+    /* Billing specific styles */
+    .bill-item-row:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .remove-btn:hover {
+        color: #dc3545;
+        transform: scale(1.1);
+    }
+    
+    .payment-method {
+        transition: all 0.2s ease;
+    }
+    
+    .payment-method:hover {
+        background-color: #f1f1f1;
+    }
+    
+    .payment-method.active {
+        background-color: #e9ecef;
+        border-color: #003F59;
+    }
+    
+    .tax-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+</style>
 
-        <!-- Search & Add Item -->
-        <div class="flex space-x-2">
-            <input id="itemName" type="text" placeholder="Enter Item Name" class="flex-1 px-3 py-2 border rounded-lg">
-            <input id="itemPrice" type="number" placeholder="Price" class="w-24 px-3 py-2 border rounded-lg">
-            <input id="itemQty" type="number" placeholder="Qty" class="w-20 px-3 py-2 border rounded-lg">
-            <button onclick="addItem()" class="bg-[#003F59] text-white px-4 py-2 rounded-lg hover:bg-[#933449]">
-                Add
+<body class="bg-[#FFFBFB]">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-[#003F59] to-[#005577] text-white p-4 flex justify-between items-center rounded-b-3xl sticky top-0 z-30">
+        <button onclick="toggleSidebar()" class="lg:hidden text-white text-2xl focus:outline-none">
+            <i class="ph ph-list"></i>
+        </button>
+        <h1 class="text-xl font-bold flex-1 text-center">Sales Billing System - <span id="shopName">QuickMart</span></h1>
+        <div class="flex items-center space-x-4">
+            <button class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full flex items-center">
+                <i class="ph ph-user mr-1"></i> <span id="currentUser">Admin</span>
+            </button>
+            <button class="lobutton flex items-center" onclick="logout()">
+                <i class="ph ph-sign-out mr-1"></i> Logout
             </button>
         </div>
+    </nav>
 
-        <!-- Billing Table -->
-        <div class="mt-4 overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-[#EBAD76] text-white">
-                    <tr>
-                        <th class="p-2">Item</th>
-                        <th class="p-2">Price</th>
-                        <th class="p-2">Qty</th>
-                        <th class="p-2">Total</th>
-                        <th class="p-2">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="billTable" class="bg-white"></tbody>
-            </table>
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebar-overlay" class="lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar"
+        class="fixed top-0 left-0 h-full shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-4 border-b border-[#d99a60] flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-3">
+                    <i class="ph ph-storefront text-xl"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-[#003F59]">Menu</h2>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-[#003F59] text-xl focus:outline-none">
+                <i class="ph ph-x"></i>
+            </button>
         </div>
-
-        <!-- Billing Summary -->
-        <div class="mt-6">
-            <label class="text-sm font-semibold">Discount %:</label>
-            <input id="discount" type="number" value="0" oninput="updateTotal()" class="w-24 px-2 py-1 border rounded-lg">
+        <ul class="mt-4 space-y-1 px-2">
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('dashboard')">
+                    <i class="ph ph-house mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Dashboard</span>
+                </div>
+            </li>
             
-            <p class="mt-2 text-lg font-bold">Subtotal: <span id="subtotal">0</span> ₹</p>
-            <p class="text-lg font-bold">Discount: <span id="discountAmt">0</span> ₹</p>
-            <p class="text-lg font-bold text-[#933449]">Total: <span id="total">0</span> ₹</p>
+            <li class="sidebar-item active">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('sales')">
+                    <i class="ph ph-receipt mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Sales Bill</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('inventory')">
+                    <i class="ph ph-archive-box mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Inventory</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('reports')">
+                    <i class="ph ph-chart-bar mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Reports</span>
+                </div>
+            </li>
+            
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('settings')">
+                    <i class="ph ph-gear mr-3 text-[#003F59]"></i> 
+                    <span class="text-[#003F59]">Settings</span>
+                </div>
+            </li>
+        </ul>
+        
+        <!-- Sidebar footer -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#d99a60] bg-[#e0a068]">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-2">
+                    <i class="ph ph-user text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-[#003F59]">Admin User</p>
+                    <p class="text-xs text-[#003F59] opacity-80">admin@example.com</p>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <!-- Checkout Button -->
-        <button class="w-full mt-4 bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#933449]">
-            Print Bill
-        </button>
+    <!-- Main Content -->
+    <div class="lg:ml-[280px] p-6 transition-all duration-300">
+        <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+            <!-- Bill Header -->
+            <div class="bg-[#003F59] text-white p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">SALES INVOICE</h2>
+                    <p class="text-sm opacity-80">Invoice No: <span id="invoiceNumber">INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}</span></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm">Date: <span id="invoiceDate">${new Date().toLocaleDateString()}</span></p>
+                    <p class="text-sm">GSTIN: <span id="gstin">22ABCDE1234F1Z5</span></p>
+                </div>
+            </div>
+            
+            <!-- Customer & Seller Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border-b">
+                <div>
+                    <h3 class="font-semibold text-[#003F59] mb-2">BILL TO:</h3>
+                    <div class="flex mb-2">
+                        <select id="customerSelect" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            <option value="">Select Customer</option>
+                            <option value="1">John Doe (Retail Customer)</option>
+                            <option value="2">ABC Traders (GST Registered)</option>
+                        </select>
+                        <button class="ml-2 bg-[#EBAD76] text-[#003F59] px-3 py-2 rounded-lg hover:bg-[#e0a068]">
+                            <i class="ph ph-plus"></i>
+                        </button>
+                    </div>
+                    <div id="customerDetails" class="hidden">
+                        <p class="text-sm"><span id="customerName">-</span></p>
+                        <p class="text-sm"><span id="customerAddress">-</span></p>
+                        <p class="text-sm">Phone: <span id="customerPhone">-</span></p>
+                        <p class="text-sm">GSTIN: <span id="customerGstin">-</span></p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-[#003F59] mb-2">SELLER:</h3>
+                    <p class="text-sm font-medium">QuickMart Retail Store</p>
+                    <p class="text-sm">123 Main Street, City Center</p>
+                    <p class="text-sm">Mumbai, Maharashtra - 400001</p>
+                    <p class="text-sm">Phone: +91 9876543210</p>
+                    <p class="text-sm">GSTIN: 22ABCDE1234F1Z5</p>
+                </div>
+            </div>
+            
+            <!-- Item Entry Section -->
+            <div class="p-4 border-b">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Item Name/Code</label>
+                        <input id="itemSearch" type="text" placeholder="Search or scan barcode" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                        <input id="itemPrice" type="number" placeholder="0.00" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                    </div>
+                    
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
+                        <input id="itemQty" type="number" value="1" min="1" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">GST Rate</label>
+                        <select id="gstRate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            <option value="0">0% (Exempt)</option>
+                            <option value="5">5% (2.5% CGST + 2.5% SGST)</option>
+                            <option value="12">12% (6% CGST + 6% SGST)</option>
+                            <option value="18" selected>18% (9% CGST + 9% SGST)</option>
+                            <option value="28">28% (14% CGST + 14% SGST)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
+                        <input id="itemDiscount" type="number" value="0" min="0" max="100" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                    </div>
+                    
+                    <div class="md:col-span-1 flex items-end">
+                        <button onclick="addItem()" 
+                                class="w-full bg-[#003F59] text-white px-3 py-2 rounded-lg hover:bg-[#933449] h-[42px] flex items-center justify-center">
+                            <i class="ph ph-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Items Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-[#EBAD76] text-[#003F59]">
+                        <tr>
+                            <th class="p-3 font-semibold text-center">#</th>
+                            <th class="p-3 font-semibold">Description</th>
+                            <th class="p-3 font-semibold text-right">Price</th>
+                            <th class="p-3 font-semibold text-center">Qty</th>
+                            <th class="p-3 font-semibold text-right">Discount</th>
+                            <th class="p-3 font-semibold text-right">Taxable</th>
+                            <th class="p-3 font-semibold text-center">GST</th>
+                            <th class="p-3 font-semibold text-right">Total</th>
+                            <th class="p-3 font-semibold text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billTable" class="divide-y divide-gray-200">
+                        <!-- Items will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Bill Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border-t">
+                <div>
+                    <h3 class="text-lg font-semibold text-[#003F59] mb-3">Payment Method</h3>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button class="payment-method active border rounded-lg p-2 text-center">
+                            <i class="ph ph-money text-xl mb-1"></i>
+                            <p class="text-xs">Cash</p>
+                        </button>
+                        <button class="payment-method border rounded-lg p-2 text-center">
+                            <i class="ph ph-credit-card text-xl mb-1"></i>
+                            <p class="text-xs">Card</p>
+                        </button>
+                        <button class="payment-method border rounded-lg p-2 text-center">
+                            <i class="ph ph-device-mobile text-xl mb-1"></i>
+                            <p class="text-xs">UPI</p>
+                        </button>
+                        <button class="payment-method border rounded-lg p-2 text-center">
+                            <i class="ph ph-bank text-xl mb-1"></i>
+                            <p class="text-xs">Bank Transfer</p>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="invoiceNotes" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" rows="2" placeholder="Any additional notes..."></textarea>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-between py-2">
+                            <span class="font-medium">Subtotal:</span>
+                            <span id="subtotal" class="font-medium">0.00</span>
+                        </div>
+                        
+                        <div class="flex justify-between py-2">
+                            <span class="font-medium">Total Discount:</span>
+                            <span id="totalDiscount" class="font-medium">0.00</span>
+                        </div>
+                        
+                        <div class="flex justify-between py-2">
+                            <span class="font-medium">Taxable Amount:</span>
+                            <span id="taxableAmount" class="font-medium">0.00</span>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-2">
+                            <div class="flex justify-between py-1">
+                                <span class="font-medium">CGST (9%):</span>
+                                <span id="cgstAmount" class="font-medium">0.00</span>
+                            </div>
+                            <div class="flex justify-between py-1">
+                                <span class="font-medium">SGST (9%):</span>
+                                <span id="sgstAmount" class="font-medium">0.00</span>
+                            </div>
+                            <div class="flex justify-between py-1">
+                                <span class="font-medium">IGST (18%):</span>
+                                <span id="igstAmount" class="font-medium">0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between py-2 border-t border-gray-200 text-lg font-bold text-[#933449]">
+                            <span>GRAND TOTAL:</span>
+                            <span id="grandTotal">0.00</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <button onclick="saveBill()" 
+                                    class="bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 flex items-center justify-center">
+                                <i class="ph ph-floppy-disk mr-2"></i> Save
+                            </button>
+                            <button onclick="printBill()" 
+                                    class="bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#933449] flex items-center justify-center">
+                                <i class="ph ph-printer mr-2"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Initialize variables
         let cart = [];
-
-        function addItem() {
-            let itemName = document.getElementById('itemName').value;
-            let itemPrice = parseFloat(document.getElementById('itemPrice').value);
-            let itemQty = parseInt(document.getElementById('itemQty').value);
-
-            if (itemName && itemPrice > 0 && itemQty > 0) {
-                cart.push({ name: itemName, price: itemPrice, qty: itemQty, total: itemPrice * itemQty });
-                updateTable();
+        let currentCustomer = null;
+        let isInterstate = false; // For IGST calculation
+        
+        // DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up customer selection
+            document.getElementById('customerSelect').addEventListener('change', function() {
+                updateCustomerDetails(this.value);
+            });
+            
+            // Set up keyboard shortcuts
+            document.getElementById('itemSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            // Initialize payment method selection
+            document.querySelectorAll('.payment-method').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-method').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Set focus to search field
+            document.getElementById('itemSearch').focus();
+        });
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('show');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                document.body.style.overflow = 'auto';
+            } else {
+                document.body.style.overflow = 'hidden';
             }
         }
-
-        function updateTable() {
-            let table = document.getElementById('billTable');
-            table.innerHTML = "";
-            cart.forEach((item, index) => {
-                table.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-2">${item.name}</td>
-                        <td class="p-2">${item.price} ₹</td>
-                        <td class="p-2">${item.qty}</td>
-                        <td class="p-2">${item.total} ₹</td>
-                        <td class="p-2">
-                            <button onclick="removeItem(${index})" class="text-red-500">X</button>
-                        </td>
-                    </tr>
-                `;
-            });
-            updateTotal();
+        
+        // Logout function
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
         }
-
+        
+        // Navigation function
+        function navigateTo(page) {
+            console.log(`Navigating to ${page}`);
+            // Actual navigation would be implemented here
+        }
+        
+        // Update customer details
+        function updateCustomerDetails(customerId) {
+            const customerDetails = document.getElementById('customerDetails');
+            
+            if (customerId === '1') {
+                // Retail customer
+                document.getElementById('customerName').textContent = 'John Doe (Retail Customer)';
+                document.getElementById('customerAddress').textContent = '123 Customer Street, Mumbai';
+                document.getElementById('customerPhone').textContent = '+91 9876543210';
+                document.getElementById('customerGstin').textContent = 'N/A (Retail Sale)';
+                customerDetails.classList.remove('hidden');
+                isInterstate = false;
+            } 
+            else if (customerId === '2') {
+                // GST registered customer
+                document.getElementById('customerName').textContent = 'ABC Traders';
+                document.getElementById('customerAddress').textContent = '456 Business Avenue, Delhi';
+                document.getElementById('customerPhone').textContent = '+91 9876543211';
+                document.getElementById('customerGstin').textContent = '07ABCDE1234F1Z5';
+                customerDetails.classList.remove('hidden');
+                isInterstate = true; // Example: Different state
+            }
+            else {
+                customerDetails.classList.add('hidden');
+            }
+            
+            currentCustomer = customerId;
+        }
+        
+        // Add item to bill
+        function addItem() {
+            const itemName = document.getElementById('itemSearch').value.trim();
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            const qty = parseInt(document.getElementById('itemQty').value) || 1;
+            const gstRate = parseInt(document.getElementById('gstRate').value) || 0;
+            const discount = parseFloat(document.getElementById('itemDiscount').value) || 0;
+            
+            if (itemName && price > 0 && qty > 0) {
+                // Calculate item values
+                const grossAmount = price * qty;
+                const discountAmount = (grossAmount * discount) / 100;
+                const taxableValue = grossAmount - discountAmount;
+                const cgstRate = isInterstate ? 0 : gstRate / 2;
+                const sgstRate = isInterstate ? 0 : gstRate / 2;
+                const igstRate = isInterstate ? gstRate : 0;
+                
+                const cgstAmount = (taxableValue * cgstRate) / 100;
+                const sgstAmount = (taxableValue * sgstRate) / 100;
+                const igstAmount = (taxableValue * igstRate) / 100;
+                
+                const totalAmount = taxableValue + cgstAmount + sgstAmount + igstAmount;
+                
+                // Add to cart
+                cart.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: itemName,
+                    price: price,
+                    qty: qty,
+                    gstRate: gstRate,
+                    discount: discount,
+                    discountAmount: discountAmount,
+                    taxableValue: taxableValue,
+                    cgstRate: cgstRate,
+                    sgstRate: sgstRate,
+                    igstRate: igstRate,
+                    cgstAmount: cgstAmount,
+                    sgstAmount: sgstAmount,
+                    igstAmount: igstAmount,
+                    total: totalAmount
+                });
+                
+                updateTable();
+                
+                // Reset input fields
+                document.getElementById('itemSearch').value = '';
+                document.getElementById('itemPrice').value = '';
+                document.getElementById('itemQty').value = '1';
+                document.getElementById('itemDiscount').value = '0';
+                document.getElementById('itemSearch').focus();
+            }
+        }
+        
+        // Update bill table
+        function updateTable() {
+            const table = document.getElementById('billTable');
+            table.innerHTML = '';
+            
+            if (cart.length === 0) {
+                table.innerHTML = `<tr class="bg-gray-50"><td colspan="9" class="p-4 text-center text-gray-500">No items added yet</td></tr>`;
+            } else {
+                cart.forEach((item, index) => {
+                    const gstBadge = item.gstRate > 0 ? 
+                        `<span class="tax-badge bg-blue-100 text-blue-800">${item.gstRate}% GST</span>` : 
+                        `<span class="tax-badge bg-gray-100 text-gray-800">Exempt</span>`;
+                    
+                    table.innerHTML += `
+                        <tr class="bill-item-row hover:bg-gray-50">
+                            <td class="p-3 text-center">${index + 1}</td>
+                            <td class="p-3 font-medium">${item.name}</td>
+                            <td class="p-3 text-right">${item.price.toFixed(2)}</td>
+                            <td class="p-3 text-center">
+                                <div class="flex justify-center items-center">
+                                    <button onclick="updateQty(${index}, -1)" class="px-2 py-1 bg-gray-100 rounded-l">-</button>
+                                    <span class="px-2 py-1 border-t border-b">${item.qty}</span>
+                                    <button onclick="updateQty(${index}, 1)" class="px-2 py-1 bg-gray-100 rounded-r">+</button>
+                                </div>
+                            </td>
+                            <td class="p-3 text-right">${item.discount}% (${item.discountAmount.toFixed(2)})</td>
+                            <td class="p-3 text-right">${item.taxableValue.toFixed(2)}</td>
+                            <td class="p-3 text-center">${gstBadge}</td>
+                            <td class="p-3 text-right">${item.total.toFixed(2)}</td>
+                            <td class="p-3 text-center">
+                                <button onclick="removeItem(${index})" class="remove-btn text-red-500 hover:text-red-700">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            updateSummary();
+        }
+        
+        // Remove item from cart
         function removeItem(index) {
             cart.splice(index, 1);
             updateTable();
         }
-
-        function updateTotal() {
-            let subtotal = cart.reduce((sum, item) => sum + item.total, 0);
-            let discountPercent = parseFloat(document.getElementById('discount').value);
-            let discountAmt = (subtotal * discountPercent) / 100;
-            let total = subtotal - discountAmt;
-
-            document.getElementById('subtotal').innerText = subtotal;
-            document.getElementById('discountAmt').innerText = discountAmt;
-            document.getElementById('total').innerText = total;
+        
+        // Update item quantity
+        function updateQty(index, change) {
+            const newQty = cart[index].qty + change;
+            if (newQty > 0) {
+                cart[index].qty = newQty;
+                
+                // Recalculate all values
+                const item = cart[index];
+                const grossAmount = item.price * item.qty;
+                item.discountAmount = (grossAmount * item.discount) / 100;
+                item.taxableValue = grossAmount - item.discountAmount;
+                
+                item.cgstAmount = (item.taxableValue * item.cgstRate) / 100;
+                item.sgstAmount = (item.taxableValue * item.sgstRate) / 100;
+                item.igstAmount = (item.taxableValue * item.igstRate) / 100;
+                
+                item.total = item.taxableValue + item.cgstAmount + item.sgstAmount + item.igstAmount;
+                
+                updateTable();
+            }
+        }
+        
+        // Update bill summary
+        function updateSummary() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const totalDiscount = cart.reduce((sum, item) => sum + item.discountAmount, 0);
+            const taxableAmount = cart.reduce((sum, item) => sum + item.taxableValue, 0);
+            
+            const totalCgst = cart.reduce((sum, item) => sum + item.cgstAmount, 0);
+            const totalSgst = cart.reduce((sum, item) => sum + item.sgstAmount, 0);
+            const totalIgst = cart.reduce((sum, item) => sum + item.igstAmount, 0);
+            
+            const grandTotal = taxableAmount + totalCgst + totalSgst + totalIgst;
+            
+            // Update summary fields
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('totalDiscount').textContent = totalDiscount.toFixed(2);
+            document.getElementById('taxableAmount').textContent = taxableAmount.toFixed(2);
+            
+            document.getElementById('cgstAmount').textContent = totalCgst.toFixed(2);
+            document.getElementById('sgstAmount').textContent = totalSgst.toFixed(2);
+            document.getElementById('igstAmount').textContent = totalIgst.toFixed(2);
+            
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+            
+            // Update GST labels based on interstate status
+            if (isInterstate) {
+                document.querySelector('span:contains("CGST")').parentElement.style.display = 'none';
+                document.querySelector('span:contains("SGST")').parentElement.style.display = 'none';
+                document.querySelector('span:contains("IGST")').parentElement.style.display = 'flex';
+            } else {
+                document.querySelector('span:contains("CGST")').parentElement.style.display = 'flex';
+                document.querySelector('span:contains("SGST")').parentElement.style.display = 'flex';
+                document.querySelector('span:contains("IGST")').parentElement.style.display = 'none';
+            }
+        }
+        
+        // Save bill
+        function saveBill() {
+            if (cart.length === 0) {
+                alert('Please add items to the bill before saving');
+                return;
+            }
+            
+            // In a real app, this would send data to the server
+            const billData = {
+                invoiceNumber: document.getElementById('invoiceNumber').textContent,
+                date: document.getElementById('invoiceDate').textContent,
+                customer: currentCustomer,
+                items: cart,
+                notes: document.getElementById('invoiceNotes').value,
+                paymentMethod: document.querySelector('.payment-method.active').textContent.trim()
+            };
+            
+            console.log('Saving bill:', billData);
+            alert('Bill saved successfully!');
+        }
+        
+        // Print bill
+        function printBill() {
+            if (cart.length === 0) {
+                alert('Please add items to the bill before printing');
+                return;
+            }
+            
+            // In a real app, this would generate a printable invoice
+            console.log('Printing bill...');
+            alert('Bill printed successfully!');
+            
+            // Reset for new bill
+            cart = [];
+            updateTable();
+            document.getElementById('invoiceNotes').value = '';
+            document.getElementById('customerSelect').value = '';
+            document.getElementById('customerDetails').classList.add('hidden');
+            
+            // Generate new invoice number
+            document.getElementById('invoiceNumber').textContent = `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+            document.getElementById('invoiceDate').textContent = new Date().toLocaleDateString();
+            
+            // Set focus back to search field
+            document.getElementById('itemSearch').focus();
         }
     </script>
-
 </body>
 </html>

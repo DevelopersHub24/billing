@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing System</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<style>
+    .dropdown-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+
+    .dropdown-content.show {
+        max-height: 500px;
+        overflow-y: auto;
+        transition: max-height 0.5s ease-in;
+    }
+
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown-arrow.rotate-180 {
+        transform: rotate(180deg);
+    }
+
+    /* Modern sidebar styling */
+    #sidebar {
+        transition: transform 0.3s ease-in-out;
+        z-index: 50;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #EBAD76 0%, #e0a068 100%);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        width: 280px;
+    }
+
+    /* Sidebar scrollbar styling */
+    #sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    #sidebar::-webkit-scrollbar-thumb {
+        background: rgba(0, 63, 89, 0.3);
+        border-radius: 10px;
+    }
+
+    #sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 63, 89, 0.5);
+    }
+
+    /* Sidebar menu items */
+    .sidebar-item {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin: 0 8px;
+    }
+
+    .sidebar-item:hover {
+        background-color: rgba(255, 251, 251, 0.8);
+        transform: translateX(4px);
+    }
+
+    .sidebar-item.active {
+        background-color: #FFFBFB;
+        font-weight: 600;
+        color: #003F59;
+    }
+
+    /* Submenu items */
+    .submenu-item {
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .submenu-item:hover {
+        background-color: rgba(255, 251, 251, 0.6);
+        border-left-color: #003F59;
+        padding-left: 12px;
+    }
+
+    .submenu-item.active {
+        background-color: rgba(255, 251, 251, 0.8);
+        border-left-color: #003F59;
+        font-weight: 500;
+    }
+
+    /* Overlay for mobile */
+    #sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 40;
+        transition: opacity 0.3s ease;
+    }
+
+    #sidebar-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Modern navbar */
+    nav {
+        background: linear-gradient(90deg, #003F59 0%, #005577 100%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+</style>
+
+<body class="bg-[#FFFBFB]">
+    <!-- Navbar -->
+    <nav class="text-white p-4 flex justify-between items-center rounded-b-3xl sticky top-0 z-30">
+        <button onclick="toggleSidebar()" class="lg:hidden text-white text-2xl focus:outline-none">
+            <i class="ph ph-list"></i>
+        </button>
+        <h1 class="text-xl font-bold flex-1 text-center">Welcome, <span id="shopName">Shop Name</span></h1>
+        <button class="lobutton" onclick="logout()">
+
+                <span>Logout</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 74 74" height="34" width="34">
+                    <circle stroke-width="3" stroke="black" r="35.5" cy="37" cx="37"></circle>
+                    <path fill="black"
+                        d="M25 35.5C24.1716 35.5 23.5 36.1716 23.5 37C23.5 37.8284 24.1716 38.5 25 38.5V35.5ZM49.0607 38.0607C49.6464 37.4749 49.6464 36.5251 49.0607 35.9393L39.5147 26.3934C38.9289 25.8076 37.9792 25.8076 37.3934 26.3934C36.8076 26.9792 36.8076 27.9289 37.3934 28.5147L45.8787 37L37.3934 45.4853C36.8076 46.0711 36.8076 47.0208 37.3934 47.6066C37.9792 48.1924 38.9289 48.1924 39.5147 47.6066L49.0607 38.0607ZM25 38.5L48 38.5V35.5L25 35.5V38.5Z">
+                    </path>
+                </svg>
+            </button>
+    </nav>
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebar-overlay" class="lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar"
+        class="fixed top-0 left-0 h-full shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-4 border-b border-[#d99a60] flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-3">
+                    <i class="ph ph-storefront text-xl"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-[#003F59]">Menu</h2>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-[#003F59] text-xl focus:outline-none">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <ul class="mt-4 space-y-1 px-2">
+            <li class="sidebar-item active">
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-house mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Dashboard</span>
+                </div>
+            </li>
+
+            <!-- Billing Dropdown -->
+            <li class="relative">
+                <div onclick="toggleDropdown('billing')"
+                    class="sidebar-item px-4 py-3 cursor-pointer flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="ph ph-receipt mr-3 text-[#003F59]"></i>
+                        <span class="text-[#003F59]">Billing</span>
+                    </div>
+                    <i id="billingDropdownArrow" class="ph ph-caret-down dropdown-arrow ml-2 text-[#003F59]"></i>
+                </div>
+                <ul id="billingDropdown" class="dropdown-content ml-8 pl-2 border-l-2 border-[#003F59] space-y-1">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('sales-bill')">
+                        <span class="text-[#003F59]">Sales Bill</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('purchase-bill')">
+                        <span class="text-[#003F59]">Purchase Bill</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('credit-note')">
+                        <span class="text-[#003F59]">Credit Note</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('debit-note')">
+                        <span class="text-[#003F59]">Debit Note</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('proforma-invoice')">
+                        <span class="text-[#003F59]">Proforma Invoice</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('asn')">
+                        <span class="text-[#003F59]">ASN</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('delivery-challan')">
+                        <span class="text-[#003F59]">Delivery Challan</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('quotation')">
+                        <span class="text-[#003F59]">Quotation</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('estimate')">
+                        <span class="text-[#003F59]">Estimate</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('return-order')">
+                        <span class="text-[#003F59]">Return Order</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('goods-receipt')">
+                        <span class="text-[#003F59]">Goods Receipt</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('goods-issue')">
+                        <span class="text-[#003F59]">Goods Issue</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('stock-transfer')">
+                        <span class="text-[#003F59]">Stock Transfer</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('consignment')">
+                        <span class="text-[#003F59]">Consignment</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('advance-payment')">
+                        <span class="text-[#003F59]">Advance Payment</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('final-settlement')">
+                        <span class="text-[#003F59]">Final Settlement</span>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Reports Dropdown -->
+            <li class="relative">
+                <div onclick="toggleDropdown('reports')"
+                    class="sidebar-item px-4 py-3 cursor-pointer flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="ph ph-chart-bar mr-3 text-[#003F59]"></i>
+                        <span class="text-[#003F59]">Reports</span>
+                    </div>
+                    <i id="reportsDropdownArrow" class="ph ph-caret-down dropdown-arrow ml-2 text-[#003F59]"></i>
+                </div>
+                <ul id="reportsDropdown" class="dropdown-content ml-8 pl-2 border-l-2 border-[#003F59] space-y-1">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('sales-report')">
+                        <span class="text-[#003F59]">Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('purchase-report')">
+                        <span class="text-[#003F59]">Purchase Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('inventory-report')">
+                        <span class="text-[#003F59]">Inventory Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('profit-loss-report')">
+                        <span class="text-[#003F59]">Profit & Loss Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('customer-ledger')">
+                        <span class="text-[#003F59]">Customer Ledger</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('supplier-ledger')">
+                        <span class="text-[#003F59]">Supplier Ledger</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('stock-summary')">
+                        <span class="text-[#003F59]">Stock Summary</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('expense-report')">
+                        <span class="text-[#003F59]">Expense Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('tax-report')">
+                        <span class="text-[#003F59]">Tax Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('audit-report')">
+                        <span class="text-[#003F59]">Audit Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('daily-sales-report')">
+                        <span class="text-[#003F59]">Daily Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('monthly-sales-report')">
+                        <span class="text-[#003F59]">Monthly Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('annual-sales-report')">
+                        <span class="text-[#003F59]">Annual Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('product-performance-report')">
+                        <span class="text-[#003F59]">Product Performance Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('customer-performance-report')">
+                        <span class="text-[#003F59]">Customer Performance Report</span>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-archive-box mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Inventory</span>
+                </div>
+            </li>
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-gear mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Settings</span>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Sidebar footer -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#d99a60] bg-[#e0a068]">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-2">
+                    <i class="ph ph-user text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-[#003F59]">Admin User</p>
+                    <p class="text-xs text-[#003F59] opacity-80">admin@example.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-[280px] p-6 text-center transition-all duration-300">
+        <h2 class="text-2xl font-semibold text-[#003F59]">Welcome to <span id="shopNameContent">Shop Name</span></h2>
+        <p class="mt-2 text-[#933449]">Select a menu option to continue.</p>
+    </div>
+
+    <script>
+        // Track active menu item
+        let activeMenuItem = null;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('show');
+
+            // Add/remove body overflow when sidebar is open/closed
+            if (sidebar.classList.contains('-translate-x-full')) {
+                document.body.style.overflow = 'auto';
+            } else {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function logout() {
+            alert('Logging out...');
+            window.location.href = '/logout';
+        }
+
+        function toggleDropdown(type) {
+            const dropdown = document.getElementById(`${type}Dropdown`);
+            const arrow = document.getElementById(`${type}DropdownArrow`);
+
+            dropdown.classList.toggle('show');
+            arrow.classList.toggle('rotate-180');
+
+            // Close other dropdowns when opening a new one
+            if (dropdown.classList.contains('show')) {
+                document.querySelectorAll('.dropdown-content').forEach(el => {
+                    if (el.id !== `${type}Dropdown` && el.classList.contains('show')) {
+                        el.classList.remove('show');
+                        document.getElementById(el.id.replace('Dropdown', 'DropdownArrow')).classList.remove('rotate-180');
+                    }
+                });
+            }
+        }
+
+        function navigateTo(page) {
+            // Update active menu item
+            if (activeMenuItem) {
+                activeMenuItem.classList.remove('active');
+            }
+
+            // Find the clicked item and mark it as active
+            const clickedItem = event.currentTarget;
+            clickedItem.classList.add('active');
+            activeMenuItem = clickedItem;
+
+            // Also mark parent menu item as active
+            const parentMenu = clickedItem.closest('.relative');
+            if (parentMenu) {
+                parentMenu.querySelector('.sidebar-item').classList.add('active');
+            }
+
+            const routes = {
+                'sales-bill': '/home/billing/sales',
+                'purchase-bill': '/home/billing/purchase',
+                'credit-note': '/home/billing/credit-note',
+                'proforma-invoice': '/home/billing/proforma',
+                'asn': '/home/billing/asn',
+                'add-more': '/home/billing/add-more'
+            };
+
+            if (routes[page]) {
+                window.location.href = routes[page];
+            } else {
+                console.log(`Navigating to: ${page}`);
+                // Add your navigation logic here
+            }
+
+            // Close sidebar on mobile after navigation
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.relative')) {
+                document.querySelectorAll('.dropdown-content').forEach(el => {
+                    el.classList.remove('show');
+                });
+                document.querySelectorAll('.dropdown-arrow').forEach(el => {
+                    el.classList.remove('rotate-180');
+                });
+            }
+        });
+
+        // Initialize with dashboard as active
+        document.addEventListener('DOMContentLoaded', function () {
+            activeMenuItem = document.querySelector('.sidebar-item.active');
+        });
+    </script>
+</body>
+
+</html>
