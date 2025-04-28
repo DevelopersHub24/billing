@@ -303,7 +303,7 @@
             </li>
 
             <li class="sidebar-item">
-                <div class="px-4 py-3 cursor-pointer flex items-center">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('inventory')">
                     <i class="ph ph-archive-box mr-3 text-[#003F59]"></i>
                     <span class="text-[#003F59]">Inventory</span>
                 </div>
@@ -400,7 +400,8 @@
                 'credit-note': '/home/billing/credit-note',
                 'proforma-invoice': '/home/billing/proforma',
                 'asn': '/home/billing/asn',
-                'add-more': '/home/billing/add-more'
+                'add-more': '/home/billing/add-more',
+                'inventory': '/home/inventory'
             };
 
             if (routes[page]) {
