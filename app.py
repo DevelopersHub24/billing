@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_mysqldb import MySQL
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
@@ -15,8 +16,18 @@ app.config['MYSQL_DB'] = 'billing'
 # 🔹 Initialize MySQL
 mysql = MySQL(app)
 
-# 🔹 Import routes
-from routes import *
+# 🔹 SQLAlchemy Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///purchase_bill.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-if __name__ == "__main__":
+# 🔹 Import routes and models
+from routes import *
+from models import *
+
+# 🔹 Create database tables
+with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
     app.run(debug=True)

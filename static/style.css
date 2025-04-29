@@ -29,3 +29,68 @@
 .lobutton:active {
   transform: scale(0.95);
 }
+
+/* Sidebar styles */
+.dropdown-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.dropdown-content.show {
+  max-height: 500px;
+  overflow-y: auto;
+  transition: max-height 0.5s ease-in;
+}
+
+.dropdown-arrow {
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.rotate-180 {
+  transform: rotate(180deg);
+}
+
+#sidebar {
+  transition: transform 0.3s ease-in-out;
+  z-index: 50;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #EBAD76 0%, #e0a068 100%);
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  width: 280px;
+}
+
+.sidebar-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 0 8px;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(255, 251, 251, 0.8);
+  transform: translateX(4px);
+}
+
+.sidebar-item.active {
+  background-color: #FFFBFB;
+  font-weight: 600;
+  color: #003F59;
+}
+
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 40;
+  transition: opacity 0.3s ease;
+}
+
+#sidebar-overlay.show {
+  display: block;
+  opacity: 1;
+}
