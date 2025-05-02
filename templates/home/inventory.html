@@ -791,19 +791,6 @@
             document.getElementById('sortBy').addEventListener('change', sortInventory);
         });
         
-        // Toggle sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('show');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                document.body.style.overflow = 'auto';
-            } else {
-                document.body.style.overflow = 'hidden';
-            }
-        }
         
         // Shop dropdown functions
         function toggleShopDropdown() {
@@ -1020,5 +1007,6 @@
             }
         }
     </script>
+    <script src="/static/js/sb_scripts.js"></script>
 </body>
 </html>

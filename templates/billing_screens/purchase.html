@@ -71,7 +71,8 @@
     <div id="sidebar-overlay" class="lg:hidden" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar -->
-    <div id="sidebar"
+        
+        <div id="sidebar"
         class="fixed top-0 left-0 h-full shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
         <div class="p-4 border-b border-[#d99a60] flex justify-between items-center">
             <div class="flex items-center">
@@ -85,42 +86,162 @@
             </button>
         </div>
         <ul class="mt-4 space-y-1 px-2">
-            <li class="sidebar-item">
-                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('dashboard')">
-                    <i class="ph ph-house mr-3 text-[#003F59]"></i> 
+            <li class="sidebar-item active">
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-house mr-3 text-[#003F59]"></i>
                     <span class="text-[#003F59]">Dashboard</span>
                 </div>
             </li>
-            
-            <li class="sidebar-item">
-                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('sales')">
-                    <i class="ph ph-receipt mr-3 text-[#003F59]"></i> 
-                    <span class="text-[#003F59]">Sales</span>
+
+            <!-- Billing Dropdown -->
+            <li class="relative">
+                <div onclick="toggleDropdown('billing')"
+                    class="sidebar-item px-4 py-3 cursor-pointer flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="ph ph-receipt mr-3 text-[#003F59]"></i>
+                        <span class="text-[#003F59]">Billing</span>
+                    </div>
+                    <i id="billingDropdownArrow" class="ph ph-caret-down dropdown-arrow ml-2 text-[#003F59]"></i>
                 </div>
+                <ul id="billingDropdown" class="dropdown-content ml-8 pl-2 border-l-2 border-[#003F59] space-y-1">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('sales-bill')">
+                        <span class="text-[#003F59]">Sales Bill</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('purchase-bill')">
+                        <span class="text-[#003F59]">Purchase Bill</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('credit-note')">
+                        <span class="text-[#003F59]">Credit Note</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('debit-note')">
+                        <span class="text-[#003F59]">Debit Note</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('proforma-invoice')">
+                        <span class="text-[#003F59]">Proforma Invoice</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('asn')">
+                        <span class="text-[#003F59]">ASN</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('delivery-challan')">
+                        <span class="text-[#003F59]">Delivery Challan</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('quotation')">
+                        <span class="text-[#003F59]">Quotation</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('estimate')">
+                        <span class="text-[#003F59]">Estimate</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('return-order')">
+                        <span class="text-[#003F59]">Return Order</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('goods-receipt')">
+                        <span class="text-[#003F59]">Goods Receipt</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('goods-issue')">
+                        <span class="text-[#003F59]">Goods Issue</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('stock-transfer')">
+                        <span class="text-[#003F59]">Stock Transfer</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('consignment')">
+                        <span class="text-[#003F59]">Consignment</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('advance-payment')">
+                        <span class="text-[#003F59]">Advance Payment</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('final-settlement')">
+                        <span class="text-[#003F59]">Final Settlement</span>
+                    </li>
+                </ul>
             </li>
-            
-            <li class="sidebar-item active">
-                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('purchase')">
-                    <i class="ph ph-shopping-cart mr-3 text-[#003F59]"></i> 
-                    <span class="text-[#003F59]">Purchase</span>
+
+            <!-- Reports Dropdown -->
+            <li class="relative">
+                <div onclick="toggleDropdown('reports')"
+                    class="sidebar-item px-4 py-3 cursor-pointer flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="ph ph-chart-bar mr-3 text-[#003F59]"></i>
+                        <span class="text-[#003F59]">Reports</span>
+                    </div>
+                    <i id="reportsDropdownArrow" class="ph ph-caret-down dropdown-arrow ml-2 text-[#003F59]"></i>
                 </div>
+                <ul id="reportsDropdown" class="dropdown-content ml-8 pl-2 border-l-2 border-[#003F59] space-y-1">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('sales-report')">
+                        <span class="text-[#003F59]">Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('purchase-report')">
+                        <span class="text-[#003F59]">Purchase Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('inventory-report')">
+                        <span class="text-[#003F59]">Inventory Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('profit-loss-report')">
+                        <span class="text-[#003F59]">Profit & Loss Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('customer-ledger')">
+                        <span class="text-[#003F59]">Customer Ledger</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('supplier-ledger')">
+                        <span class="text-[#003F59]">Supplier Ledger</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('stock-summary')">
+                        <span class="text-[#003F59]">Stock Summary</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('expense-report')">
+                        <span class="text-[#003F59]">Expense Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('tax-report')">
+                        <span class="text-[#003F59]">Tax Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('audit-report')">
+                        <span class="text-[#003F59]">Audit Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('daily-sales-report')">
+                        <span class="text-[#003F59]">Daily Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('monthly-sales-report')">
+                        <span class="text-[#003F59]">Monthly Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('annual-sales-report')">
+                        <span class="text-[#003F59]">Annual Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('product-performance-report')">
+                        <span class="text-[#003F59]">Product Performance Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('customer-performance-report')">
+                        <span class="text-[#003F59]">Customer Performance Report</span>
+                    </li>
+                </ul>
             </li>
-            
+
             <li class="sidebar-item">
                 <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('inventory')">
-                    <i class="ph ph-archive-box mr-3 text-[#003F59]"></i> 
+                    <i class="ph ph-archive-box mr-3 text-[#003F59]"></i>
                     <span class="text-[#003F59]">Inventory</span>
                 </div>
             </li>
-            
             <li class="sidebar-item">
-                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('reports')">
-                    <i class="ph ph-chart-bar mr-3 text-[#003F59]"></i> 
-                    <span class="text-[#003F59]">Reports</span>
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-gear mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Settings</span>
                 </div>
             </li>
         </ul>
-        
+
         <!-- Sidebar footer -->
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#d99a60] bg-[#e0a068]">
             <div class="flex items-center">
@@ -251,10 +372,10 @@
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">GST Rate</label>
                         <select id="gstRate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
-                            <option value="0">0% (Exempt)</option>
+                            <option value="0" selected>0% (Exempt)</option>
                             <option value="5">5% (2.5% CGST + 2.5% SGST)</option>
                             <option value="12">12% (6% CGST + 6% SGST)</option>
-                            <option value="18" selected>18% (9% CGST + 9% SGST)</option>
+                            <option value="18">18% (9% CGST + 9% SGST)</option>
                             <option value="28">28% (14% CGST + 14% SGST)</option>
                         </select>
                     </div>
@@ -443,27 +564,6 @@
             // Set focus to search field
             document.getElementById('itemSearch').focus();
         });
-        
-        // Toggle sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('show');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                document.body.style.overflow = 'auto';
-            } else {
-                document.body.style.overflow = 'hidden';
-            }
-        }
-        
-        // Logout function
-        function logout() {
-            if(confirm('Are you sure you want to logout?')) {
-                window.location.href = '/logout';
-            }
-        }
         
         // Navigation function
         function navigateTo(page) {
@@ -682,5 +782,6 @@
             alert('Purchase bill printed successfully!');
         }
     </script>
+    <script src="/static/js/sb_scripts.js"></script>
 </body>
 </html>
