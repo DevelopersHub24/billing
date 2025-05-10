@@ -72,6 +72,30 @@ def debit_note():
         return render_template("billing_screens/debitnote.html", name=session['name'])
     return redirect(url_for('login'))
 
+@app.route('/home/billing/proforma')
+def proforma_invoice():
+    if 'loggedin' in session:
+        return render_template("billing_screens/proforma.html", name=session['name'])
+    return redirect(url_for('login'))
+
+@app.route('/home/billing/asn')
+def asn():
+    if 'loggedin' in session:
+        return render_template("billing_screens/asn.html", name=session['name'])
+    return redirect(url_for('login'))
+
+@app.route('/home/billing/delivery-challan')
+def delivery_challan():
+    if 'loggedin' in session:
+        return render_template("billing_screens/delivery.html", name=session['name'])
+    return redirect(url_for('login'))
+
+@app.route('/home/billing/quotation')
+def quotation():
+    if 'loggedin' in session:
+        return render_template("billing_screens/quotation.html", name=session['name'])
+    return redirect(url_for('login'))
+
 # 🔹 Logout Route
 @app.route('/logout')
 def logout():

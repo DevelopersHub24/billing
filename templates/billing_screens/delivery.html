@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Challan System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<style>
+    /* Delivery Challan specific styles */
+    .challan-item-row:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .remove-btn:hover {
+        color: #dc3545;
+        transform: scale(1.1);
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+    
+    .customer-card {
+        transition: all 0.2s ease;
+    }
+    
+    .customer-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<body class="bg-[#FFFBFB]">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-[#003F59] to-[#005577] text-white p-4 flex justify-between items-center rounded-b-3xl sticky top-0 z-30">
+        <button onclick="toggleSidebar()" class="lg:hidden text-white text-2xl focus:outline-none">
+            <i class="ph ph-list"></i>
+        </button>
+        <h1 class="text-xl font-bold flex-1 text-center">Delivery Challan System</h1>
+        <div class="flex items-center space-x-4">
+            <button class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full flex items-center">
+                <i class="ph ph-user mr-1"></i> <span id="currentUser">Admin</span>
+            </button>
+            <button class="lobutton flex items-center" onclick="logout()">
+                <i class="ph ph-sign-out mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebar-overlay" class="lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar"
+        class="fixed top-0 left-0 h-full shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-4 border-b border-[#d99a60] flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-3">
+                    <i class="ph ph-storefront text-xl"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-[#003F59]">Menu</h2>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-[#003F59] text-xl focus:outline-none">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <ul class="mt-4 space-y-1 px-2">
+            <li class="sidebar-item active">
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-house mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Dashboard</span>
+                </div>
+            </li>
+
+            <!-- Billing Dropdown -->
+            <li class="relative">
+                <div onclick="toggleDropdown('billing')"
+                    class="sidebar-item px-4 py-3 cursor-pointer flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="ph ph-receipt mr-3 text-[#003F59]"></i>
+                        <span class="text-[#003F59]">Billing</span>
+                    </div>
+                    <i id="billingDropdownArrow" class="ph ph-caret-down dropdown-arrow ml-2 text-[#003F59]"></i>
+                </div>
+                <ul id="billingDropdown" class="dropdown-content ml-8 pl-2 border-l-2 border-[#003F59] space-y-1">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('sales-bill')">
+                        <span class="text-[#003F59]">Sales Bill</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('purchase-bill')">
+                        <span class="text-[#003F59]">Purchase Bill</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('credit-note')">
+                        <span class="text-[#003F59]">Credit Note</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('debit-note')">
+                        <span class="text-[#003F59]">Debit Note</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('proforma-invoice')">
+                        <span class="text-[#003F59]">Proforma Invoice</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('asn')">
+                        <span class="text-[#003F59]">ASN</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('delivery-challan')">
+                        <span class="text-[#003F59]">Delivery Challan</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('quotation')">
+                        <span class="text-[#003F59]">Quotation</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('estimate')">
+                        <span class="text-[#003F59]">Estimate</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('return-order')">
+                        <span class="text-[#003F59]">Return Order</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('goods-receipt')">
+                        <span class="text-[#003F59]">Goods Receipt</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('goods-issue')">
+                        <span class="text-[#003F59]">Goods Issue</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('stock-transfer')">
+                        <span class="text-[#003F59]">Stock Transfer</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('consignment')">
+                        <span class="text-[#003F59]">Consignment</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('advance-payment')">
+                        <span class="text-[#003F59]">Advance Payment</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('final-settlement')">
+                        <span class="text-[#003F59]">Final Settlement</span>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Reports Dropdown -->
+            <li class="relative">
+                <div onclick="toggleDropdown('reports')"
+                    class="sidebar-item px-4 py-3 cursor-pointer flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="ph ph-chart-bar mr-3 text-[#003F59]"></i>
+                        <span class="text-[#003F59]">Reports</span>
+                    </div>
+                    <i id="reportsDropdownArrow" class="ph ph-caret-down dropdown-arrow ml-2 text-[#003F59]"></i>
+                </div>
+                <ul id="reportsDropdown" class="dropdown-content ml-8 pl-2 border-l-2 border-[#003F59] space-y-1">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('sales-report')">
+                        <span class="text-[#003F59]">Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('purchase-report')">
+                        <span class="text-[#003F59]">Purchase Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('inventory-report')">
+                        <span class="text-[#003F59]">Inventory Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('profit-loss-report')">
+                        <span class="text-[#003F59]">Profit & Loss Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('customer-ledger')">
+                        <span class="text-[#003F59]">Customer Ledger</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('supplier-ledger')">
+                        <span class="text-[#003F59]">Supplier Ledger</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('stock-summary')">
+                        <span class="text-[#003F59]">Stock Summary</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('expense-report')">
+                        <span class="text-[#003F59]">Expense Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('tax-report')">
+                        <span class="text-[#003F59]">Tax Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('audit-report')">
+                        <span class="text-[#003F59]">Audit Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('daily-sales-report')">
+                        <span class="text-[#003F59]">Daily Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('monthly-sales-report')">
+                        <span class="text-[#003F59]">Monthly Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('annual-sales-report')">
+                        <span class="text-[#003F59]">Annual Sales Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('product-performance-report')">
+                        <span class="text-[#003F59]">Product Performance Report</span>
+                    </li>
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
+                        onclick="navigateTo('customer-performance-report')">
+                        <span class="text-[#003F59]">Customer Performance Report</span>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center" onclick="navigateTo('inventory')">
+                    <i class="ph ph-archive-box mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Inventory</span>
+                </div>
+            </li>
+            <li class="sidebar-item">
+                <div class="px-4 py-3 cursor-pointer flex items-center">
+                    <i class="ph ph-gear mr-3 text-[#003F59]"></i>
+                    <span class="text-[#003F59]">Settings</span>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Sidebar footer -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#d99a60] bg-[#e0a068]">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-[#003F59] flex items-center justify-center text-white mr-2">
+                    <i class="ph ph-user text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-[#003F59]">Admin User</p>
+                    <p class="text-xs text-[#003F59] opacity-80">admin@example.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-[280px] p-6 transition-all duration-300">
+        <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+            <!-- Delivery Challan Header -->
+            <div class="bg-[#8B4513] text-white p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">DELIVERY CHALLAN</h2>
+                    <p class="text-sm opacity-80">Challan No: <span id="challanNumber">DC-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}</span></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm">Date: <span id="challanDate">${new Date().toLocaleDateString()}</span></p>
+                    <p class="text-sm">GSTIN: <span id="gstin">22ABCDE1234F1Z5</span></p>
+                </div>
+            </div>
+            
+            <!-- Customer Info -->
+            <div class="p-4 border-b">
+                <div class="flex flex-col md:flex-row justify-between gap-4">
+                    <div class="w-full md:w-1/2">
+                        <h3 class="font-semibold text-[#003F59] mb-2">CUSTOMER DETAILS:</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2">
+                                <select id="customerSelect" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                                    <option value="">Select Customer</option>
+                                    <option value="1">ABC Traders</option>
+                                    <option value="2">XYZ Enterprises</option>
+                                    <option value="3">Global Retail</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button onclick="showAddCustomerModal()" class="w-full bg-[#EBAD76] text-[#003F59] px-3 py-2 rounded-lg hover:bg-[#e0a068]">
+                                    <i class="ph ph-plus"></i> New Customer
+                                </button>
+                            </div>
+                        </div>
+                        <div id="customerDetails" class="mt-3 hidden">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p class="text-sm font-medium">Customer Name:</p>
+                                    <p id="customerName" class="text-sm">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium">Contact:</p>
+                                    <p id="customerContact" class="text-sm">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium">GSTIN:</p>
+                                    <p id="customerGstin" class="text-sm">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium">Address:</p>
+                                    <p id="customerAddress" class="text-sm">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-1/2">
+                        <h3 class="font-semibold text-[#003F59] mb-2">DELIVERY DETAILS:</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Challan Date</label>
+                                <input type="date" id="challanDateInput" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Reference</label>
+                                <input type="text" id="invoiceReference" placeholder="Invoice No." class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Person</label>
+                                <input type="text" id="deliveryPerson" placeholder="Driver name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle No.</label>
+                                <input type="text" id="vehicleNo" placeholder="Vehicle number" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Item Entry Section -->
+            <div class="p-4 border-b">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Item Name/Code</label>
+                        <div class="relative">
+                            <input id="itemSearch" type="text" placeholder="Search or scan barcode" 
+                                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            <button class="absolute right-2 top-2 text-gray-500">
+                                <i class="ph ph-magnifying-glass"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
+                        <input id="itemQty" type="number" value="1" min="1" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">UOM</label>
+                        <select id="itemUom" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            <option value="pcs">Pieces</option>
+                            <option value="kg">Kilograms</option>
+                            <option value="g">Grams</option>
+                            <option value="l">Liters</option>
+                            <option value="m">Meters</option>
+                            <option value="box">Box</option>
+                            <option value="carton">Carton</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Batch No.</label>
+                        <input id="batchNo" type="text" placeholder="Batch number" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                        <select id="itemCondition" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            <option value="good">Good</option>
+                            <option value="damaged">Damaged</option>
+                            <option value="expired">Expired</option>
+                            <option value="return">Return</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-1 flex items-end">
+                        <button onclick="addItem()" 
+                                class="w-full bg-[#003F59] text-white px-3 py-2 rounded-lg hover:bg-[#8B4513] h-[42px] flex items-center justify-center">
+                            <i class="ph ph-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Items Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-[#EBAD76] text-[#003F59]">
+                        <tr>
+                            <th class="p-3 font-semibold text-center">#</th>
+                            <th class="p-3 font-semibold">Item Description</th>
+                            <th class="p-3 font-semibold text-right">Qty</th>
+                            <th class="p-3 font-semibold text-center">UOM</th>
+                            <th class="p-3 font-semibold">Batch No.</th>
+                            <th class="p-3 font-semibold text-center">Condition</th>
+                            <th class="p-3 font-semibold">Notes</th>
+                            <th class="p-3 font-semibold text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="challanTable" class="divide-y divide-gray-200">
+                        <!-- Items will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Delivery Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border-t">
+                <div>
+                    <h3 class="text-lg font-semibold text-[#003F59] mb-3">Delivery Instructions</h3>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                        <textarea id="deliveryAddress" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" rows="2" placeholder="Delivery address if different from customer address"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Special Instructions</label>
+                        <textarea id="specialInstructions" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" rows="2" placeholder="Any special delivery instructions..."></textarea>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-between py-2">
+                            <span class="font-medium">Total Items:</span>
+                            <span id="totalItems" class="font-medium">0</span>
+                        </div>
+                        
+                        <div class="flex justify-between py-2">
+                            <span class="font-medium">Total Quantity:</span>
+                            <span id="totalQuantity" class="font-medium">0</span>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-2">
+                            <div class="flex justify-between py-1">
+                                <span class="font-medium">Good Condition:</span>
+                                <span id="goodItems" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between py-1">
+                                <span class="font-medium">Damaged/Return:</span>
+                                <span id="damagedItems" class="font-medium">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between py-2 border-t border-gray-200">
+                            <span class="font-medium">Challan Status:</span>
+                            <select id="challanStatus" class="w-32 px-2 py-1 border rounded">
+                                <option value="prepared">Prepared</option>
+                                <option value="dispatched">Dispatched</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="returned">Returned</option>
+                            </select>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <button onclick="saveChallan()" 
+                                    class="bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 flex items-center justify-center">
+                                <i class="ph ph-floppy-disk mr-2"></i> Save
+                            </button>
+                            <button onclick="printChallan()" 
+                                    class="bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#8B4513] flex items-center justify-center">
+                                <i class="ph ph-printer mr-2"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Customer</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label for="customerNameInput" class="block text-sm font-medium text-gray-700">Customer Name</label>
+                                    <input type="text" id="customerNameInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="customerContactInput" class="block text-sm font-medium text-gray-700">Contact Person</label>
+                                    <input type="text" id="customerContactInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="customerPhoneInput" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                    <input type="text" id="customerPhoneInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="customerEmailInput" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="customerEmailInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="customerGstinInput" class="block text-sm font-medium text-gray-700">GSTIN</label>
+                                    <input type="text" id="customerGstinInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="customerAddressInput" class="block text-sm font-medium text-gray-700">Address</label>
+                                    <textarea id="customerAddressInput" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="saveCustomer()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#003F59] text-base font-medium text-white hover:bg-[#005577] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:ml-3 sm:w-auto sm:text-sm">
+                        Save Customer
+                    </button>
+                    <button type="button" onclick="hideAddCustomerModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let challanItems = [];
+        let currentCustomer = null;
+        
+        // DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up customer selection
+            document.getElementById('customerSelect').addEventListener('change', function() {
+                updateCustomerDetails(this.value);
+            });
+            
+            // Set up keyboard shortcuts
+            document.getElementById('itemSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            // Set focus to search field
+            document.getElementById('itemSearch').focus();
+        });
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('show');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                document.body.style.overflow = 'auto';
+            } else {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        }
+        
+        // Navigation function
+        function navigateTo(page) {
+            console.log(`Navigating to ${page}`);
+            // Actual navigation would be implemented here
+        }
+        
+        // Customer functions
+        function updateCustomerDetails(customerId) {
+            const customerDetails = document.getElementById('customerDetails');
+            
+            if (customerId === '1') {
+                // ABC Traders
+                document.getElementById('customerName').textContent = 'ABC Traders';
+                document.getElementById('customerContact').textContent = 'Ramesh Patel (+91 9876543210)';
+                document.getElementById('customerGstin').textContent = '22ABCDE1234F1Z5';
+                document.getElementById('customerAddress').textContent = '123 Trade Center, Business District, Mumbai';
+                customerDetails.classList.remove('hidden');
+                currentCustomer = customerId;
+            } 
+            else if (customerId === '2') {
+                // XYZ Enterprises
+                document.getElementById('customerName').textContent = 'XYZ Enterprises';
+                document.getElementById('customerContact').textContent = 'Suresh Kumar (+91 9876543211)';
+                document.getElementById('customerGstin').textContent = '27XYZDE1234F1Z5';
+                document.getElementById('customerAddress').textContent = '456 Corporate Park, Navi Mumbai';
+                customerDetails.classList.remove('hidden');
+                currentCustomer = customerId;
+            }
+            else if (customerId === '3') {
+                // Global Retail
+                document.getElementById('customerName').textContent = 'Global Retail';
+                document.getElementById('customerContact').textContent = 'Mohan Sharma (+91 9876543212)';
+                document.getElementById('customerGstin').textContent = '29GLOBE1234F1Z5';
+                document.getElementById('customerAddress').textContent = '789 Retail Plaza, Mumbai';
+                customerDetails.classList.remove('hidden');
+                currentCustomer = customerId;
+            }
+            else {
+                customerDetails.classList.add('hidden');
+                currentCustomer = null;
+            }
+        }
+        
+        function showAddCustomerModal() {
+            document.getElementById('addCustomerModal').classList.remove('hidden');
+        }
+        
+        function hideAddCustomerModal() {
+            document.getElementById('addCustomerModal').classList.add('hidden');
+        }
+        
+        function saveCustomer() {
+            const name = document.getElementById('customerNameInput').value;
+            if (name) {
+                // In a real app, this would save to database
+                alert(`New customer "${name}" added successfully!`);
+                hideAddCustomerModal();
+                // Refresh customer list - in real app would reload from API
+            } else {
+                alert('Please enter customer name');
+            }
+        }
+        
+        // Item functions
+        function addItem() {
+            const itemName = document.getElementById('itemSearch').value.trim();
+            const qty = parseInt(document.getElementById('itemQty').value) || 1;
+            const uom = document.getElementById('itemUom').value;
+            const batchNo = document.getElementById('batchNo').value.trim();
+            const condition = document.getElementById('itemCondition').value;
+            
+            if (itemName && qty > 0) {
+                // Add to challan items
+                challanItems.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: itemName,
+                    qty: qty,
+                    uom: uom,
+                    batchNo: batchNo,
+                    condition: condition,
+                    notes: ''
+                });
+                
+                updateChallanTable();
+                
+                // Reset input fields
+                document.getElementById('itemSearch').value = '';
+                document.getElementById('itemQty').value = '1';
+                document.getElementById('batchNo').value = '';
+                document.getElementById('itemSearch').focus();
+            }
+        }
+        
+        function updateChallanTable() {
+            const table = document.getElementById('challanTable');
+            table.innerHTML = '';
+            
+            if (challanItems.length === 0) {
+                table.innerHTML = `<tr class="bg-gray-50"><td colspan="8" class="p-4 text-center text-gray-500">No items added yet</td></tr>`;
+            } else {
+                challanItems.forEach((item, index) => {
+                    let conditionBadge = '';
+                    if (item.condition === 'good') {
+                        conditionBadge = `<span class="status-badge bg-green-100 text-green-800">Good</span>`;
+                    } else if (item.condition === 'damaged') {
+                        conditionBadge = `<span class="status-badge bg-red-100 text-red-800">Damaged</span>`;
+                    } else if (item.condition === 'expired') {
+                        conditionBadge = `<span class="status-badge bg-orange-100 text-orange-800">Expired</span>`;
+                    } else if (item.condition === 'return') {
+                        conditionBadge = `<span class="status-badge bg-blue-100 text-blue-800">Return</span>`;
+                    }
+                    
+                    table.innerHTML += `
+                        <tr class="challan-item-row hover:bg-gray-50">
+                            <td class="p-3 text-center">${index + 1}</td>
+                            <td class="p-3 font-medium">${item.name}</td>
+                            <td class="p-3 text-right">${item.qty}</td>
+                            <td class="p-3 text-center">${item.uom}</td>
+                            <td class="p-3">${item.batchNo || '-'}</td>
+                            <td class="p-3 text-center">${conditionBadge}</td>
+                            <td class="p-3">
+                                <input type="text" value="${item.notes}" onchange="updateItemNotes(${index}, this.value)" 
+                                       class="w-full px-2 py-1 border rounded text-sm" placeholder="Item notes">
+                            </td>
+                            <td class="p-3 text-center">
+                                <button onclick="removeItem(${index})" class="remove-btn text-red-500 hover:text-red-700">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            updateSummary();
+        }
+        
+        function updateItemNotes(index, notes) {
+            challanItems[index].notes = notes;
+        }
+        
+        function removeItem(index) {
+            challanItems.splice(index, 1);
+            updateChallanTable();
+        }
+        
+        function updateSummary() {
+            const totalItems = challanItems.length;
+            const totalQuantity = challanItems.reduce((sum, item) => sum + item.qty, 0);
+            const goodItems = challanItems.filter(item => item.condition === 'good').length;
+            const damagedItems = challanItems.filter(item => item.condition !== 'good').length;
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('goodItems').textContent = goodItems;
+            document.getElementById('damagedItems').textContent = damagedItems;
+        }
+        
+        // Challan functions
+        function saveChallan() {
+            if (challanItems.length === 0) {
+                alert('Please add items to the delivery challan before saving');
+                return;
+            }
+            
+            if (!currentCustomer) {
+                alert('Please select a customer');
+                return;
+            }
+            
+            const deliveryPerson = document.getElementById('deliveryPerson').value;
+            if (!deliveryPerson) {
+                alert('Please enter delivery person name');
+                return;
+            }
+            
+            // In a real app, this would send data to the server
+            const challanData = {
+                challanNumber: document.getElementById('challanNumber').textContent,
+                challanDate: document.getElementById('challanDateInput').value,
+                customer: currentCustomer,
+                invoiceReference: document.getElementById('invoiceReference').value,
+                deliveryPerson: deliveryPerson,
+                vehicleNo: document.getElementById('vehicleNo').value,
+                items: challanItems,
+                deliveryAddress: document.getElementById('deliveryAddress').value,
+                specialInstructions: document.getElementById('specialInstructions').value,
+                status: document.getElementById('challanStatus').value
+            };
+            
+            console.log('Saving delivery challan:', challanData);
+            alert('Delivery challan saved successfully!');
+        }
+        
+        function printChallan() {
+            if (challanItems.length === 0) {
+                alert('Please add items to the delivery challan before printing');
+                return;
+            }
+            
+            if (!currentCustomer) {
+                alert('Please select a customer');
+                return;
+            }
+            
+            // In a real app, this would generate a printable challan
+            console.log('Printing delivery challan...');
+            alert('Delivery challan printed successfully!');
+        }
+    </script>
+
+</body>
+<script src="/static/js/sb_scripts.js"></script>
+</html>

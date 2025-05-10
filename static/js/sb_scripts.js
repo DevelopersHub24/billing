@@ -60,9 +60,11 @@ function navigateTo(page) {
             'sales-bill': '/home/billing/sales',
             'purchase-bill': '/home/billing/purchase',
             'credit-note': '/home/billing/credit-note',
-            'debit-note': '/home/billing/debit-note', // Add this line
+            'debit-note': '/home/billing/debit-note',
             'proforma-invoice': '/home/billing/proforma',
-            'asn': '/home/billing/asn',
+            'asn': '/home/billing/asn', 
+            'delivery-challan': '/home/billing/delivery-challan',
+            'quotation': '/home/billing/quotation',
             'inventory': '/home/inventory'
         };
     

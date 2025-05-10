@@ -1,37 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debit Note System</title>
+    <title>Proforma Invoice System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <style>
-    /* Debit Note specific styles */
-    .debit-note-item-row:hover {
+    /* Proforma Invoice specific styles */
+    .proforma-item-row:hover {
         background-color: #f8f9fa;
     }
-
+    
     .remove-btn:hover {
         color: #dc3545;
         transform: scale(1.1);
     }
-
-    .reason-badge {
+    
+    .tax-badge {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
         border-radius: 0.25rem;
     }
-
-    .supplier-card {
+    
+    .customer-card {
         transition: all 0.2s ease;
     }
-
-    .supplier-card:hover {
+    
+    .customer-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
@@ -39,12 +38,11 @@
 
 <body class="bg-[#FFFBFB]">
     <!-- Navbar -->
-    <nav
-        class="bg-gradient-to-r from-[#003F59] to-[#005577] text-white p-4 flex justify-between items-center rounded-b-3xl sticky top-0 z-30">
+    <nav class="bg-gradient-to-r from-[#003F59] to-[#005577] text-white p-4 flex justify-between items-center rounded-b-3xl sticky top-0 z-30">
         <button onclick="toggleSidebar()" class="lg:hidden text-white text-2xl focus:outline-none">
             <i class="ph ph-list"></i>
         </button>
-        <h1 class="text-xl font-bold flex-1 text-center">Debit Note System</h1>
+        <h1 class="text-xl font-bold flex-1 text-center">Proforma Invoice System</h1>
         <div class="flex items-center space-x-4">
             <button class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full flex items-center">
                 <i class="ph ph-user mr-1"></i> <span id="currentUser">Admin</span>
@@ -103,8 +101,7 @@
                     <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('debit-note')">
                         <span class="text-[#003F59]">Debit Note</span>
                     </li>
-                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg"
-                        onclick="navigateTo('proforma-invoice')">
+                    <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('proforma-invoice')">
                         <span class="text-[#003F59]">Proforma Invoice</span>
                     </li>
                     <li class="submenu-item px-3 py-2 cursor-pointer rounded-lg" onclick="navigateTo('asn')">
@@ -246,129 +243,119 @@
     <!-- Main Content -->
     <div class="lg:ml-[280px] p-6 transition-all duration-300">
         <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-            <!-- Debit Note Header -->
-            <div class="bg-[#5E3023] text-white p-4 flex justify-between items-center">
+            <!-- Proforma Invoice Header -->
+            <div class="bg-[#4A6FA5] text-white p-4 flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold">DEBIT NOTE</h2>
-                    <p class="text-sm opacity-80">Note No: <span id="debitNoteNumber">DN-${new
-                            Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}</span>
-                    </p>
+                    <h2 class="text-xl font-bold">PROFORMA INVOICE</h2>
+                    <p class="text-sm opacity-80">Invoice No: <span id="proformaNumber">PI-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}</span></p>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm">Date: <span id="debitNoteDate">${new Date().toLocaleString()}</span></p>
-                    <p class="text-sm">GSTIN: <span id="gstin">22ABCDE1234F1Z5</span></p>
+                    <p class="text-sm">Date: <span id="proformaDate">${new Date().toLocaleDateString()}</span></p>
+                    <p class="text-sm">Valid Until: <span id="validUntilDate">${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span></p>
                 </div>
             </div>
-
-            <!-- Supplier Info -->
+            
+            <!-- Customer Info -->
             <div class="p-4 border-b">
                 <div class="flex flex-col md:flex-row justify-between gap-4">
                     <div class="w-full md:w-1/2">
-                        <h3 class="font-semibold text-[#003F59] mb-2">SUPPLIER DETAILS:</h3>
+                        <h3 class="font-semibold text-[#003F59] mb-2">CUSTOMER DETAILS:</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="md:col-span-2">
-                                <select id="supplierSelect"
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
-                                    <option value="">Select Supplier</option>
-                                    <option value="1">ABC Wholesalers</option>
-                                    <option value="2">XYZ Distributors</option>
-                                    <option value="3">Global Imports</option>
+                                <select id="customerSelect" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                                    <option value="">Select Customer</option>
+                                    <option value="1">ABC Traders</option>
+                                    <option value="2">XYZ Enterprises</option>
+                                    <option value="3">Global Retail</option>
                                 </select>
                             </div>
                             <div>
-                                <button onclick="showAddSupplierModal()"
-                                    class="w-full bg-[#EBAD76] text-[#003F59] px-3 py-2 rounded-lg hover:bg-[#e0a068]">
-                                    <i class="ph ph-plus"></i> New Supplier
+                                <button onclick="showAddCustomerModal()" class="w-full bg-[#EBAD76] text-[#003F59] px-3 py-2 rounded-lg hover:bg-[#e0a068]">
+                                    <i class="ph ph-plus"></i> New Customer
                                 </button>
                             </div>
                         </div>
-                        <div id="supplierDetails" class="mt-3 hidden">
+                        <div id="customerDetails" class="mt-3 hidden">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <p class="text-sm font-medium">Supplier Name:</p>
-                                    <p id="supplierName" class="text-sm">-</p>
+                                    <p class="text-sm font-medium">Customer Name:</p>
+                                    <p id="customerName" class="text-sm">-</p>
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium">Contact:</p>
-                                    <p id="supplierContact" class="text-sm">-</p>
+                                    <p id="customerContact" class="text-sm">-</p>
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium">GSTIN:</p>
-                                    <p id="supplierGstin" class="text-sm">-</p>
+                                    <p id="customerGstin" class="text-sm">-</p>
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium">Address:</p>
-                                    <p id="supplierAddress" class="text-sm">-</p>
+                                    <p id="customerAddress" class="text-sm">-</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="w-full md:w-1/2">
-                        <h3 class="font-semibold text-[#003F59] mb-2">DEBIT NOTE DETAILS:</h3>
+                        <h3 class="font-semibold text-[#003F59] mb-2">PROFORMA DETAILS:</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Debit Note Date</label>
-                                <input type="date" id="debitNoteDateInput"
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]"
-                                    value="${new Date().toISOString().split('T')[0]}">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Proforma Date</label>
+                                <input type="date" id="proformaDateInput" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" value="${new Date().toISOString().split('T')[0]}">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Original Invoice No.</label>
-                                <input type="text" id="originalInvoice" placeholder="Original invoice number"
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Valid Until</label>
+                                <input type="date" id="validUntilInput" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" value="${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                                <select id="reason"
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
-                                    <option value="shortage">Shortage in Delivery</option>
-                                    <option value="damage">Damaged Goods</option>
-                                    <option value="overcharge">Overcharged</option>
-                                    <option value="quality">Quality Issues</option>
-                                    <option value="other">Other</option>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                                <select id="paymentTerms" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                                    <option value="advance">100% Advance</option>
+                                    <option value="50-50">50% Advance, 50% on Delivery</option>
+                                    <option value="30days">Net 30 Days</option>
+                                    <option value="cod">Cash on Delivery</option>
+                                    <option value="custom">Custom</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Reference No.</label>
-                                <input type="text" id="referenceNo" placeholder="GRN/Return No."
-                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                                <input type="text" id="referenceNo" placeholder="PO/Quotation No." class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
+            
             <!-- Item Entry Section -->
             <div class="p-4 border-b">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                     <div class="md:col-span-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Item Name/Code</label>
                         <div class="relative">
-                            <input id="itemSearch" type="text" placeholder="Search or scan barcode"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                            <input id="itemSearch" type="text" placeholder="Search or scan barcode" 
+                                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
                             <button class="absolute right-2 top-2 text-gray-500">
                                 <i class="ph ph-magnifying-glass"></i>
                             </button>
                         </div>
                     </div>
-
+                    
                     <div class="md:col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
-                        <input id="itemQty" type="number" value="1" min="1"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <input id="itemQty" type="number" value="1" min="1" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
                     </div>
-
+                    
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Original Price</label>
-                        <input id="itemPrice" type="number" placeholder="0.00"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Price</label>
+                        <input id="itemPrice" type="number" placeholder="0.00" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
                     </div>
-
+                    
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">GST Rate</label>
-                        <select id="gstRate"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <select id="gstRate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
                             <option value="0">0% (Exempt)</option>
                             <option value="5">5% (2.5% CGST + 2.5% SGST)</option>
                             <option value="12">12% (6% CGST + 6% SGST)</option>
@@ -376,22 +363,22 @@
                             <option value="28">28% (14% CGST + 14% SGST)</option>
                         </select>
                     </div>
-
+                    
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment (%)</label>
-                        <input id="itemAdjustment" type="number" value="100" min="0" max="100"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
+                        <input id="itemDiscount" type="number" value="0" min="0" max="100" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]">
                     </div>
-
+                    
                     <div class="md:col-span-1 flex items-end">
-                        <button onclick="addItem()"
-                            class="w-full bg-[#003F59] text-white px-3 py-2 rounded-lg hover:bg-[#5E3023] h-[42px] flex items-center justify-center">
+                        <button onclick="addItem()" 
+                                class="w-full bg-[#003F59] text-white px-3 py-2 rounded-lg hover:bg-[#4A6FA5] h-[42px] flex items-center justify-center">
                             <i class="ph ph-plus"></i>
                         </button>
                     </div>
                 </div>
             </div>
-
+            
             <!-- Items Table -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -400,85 +387,80 @@
                             <th class="p-3 font-semibold text-center">#</th>
                             <th class="p-3 font-semibold">Item Description</th>
                             <th class="p-3 font-semibold text-right">Qty</th>
-                            <th class="p-3 font-semibold text-right">Original Price</th>
-                            <th class="p-3 font-semibold text-right">Adjustment</th>
-                            <th class="p-3 font-semibold text-right">Debit Amount</th>
+                            <th class="p-3 font-semibold text-right">Unit Price</th>
+                            <th class="p-3 font-semibold text-right">Discount</th>
+                            <th class="p-3 font-semibold text-right">Taxable</th>
                             <th class="p-3 font-semibold text-center">GST</th>
-                            <th class="p-3 font-semibold text-right">Total Debit</th>
+                            <th class="p-3 font-semibold text-right">Total</th>
                             <th class="p-3 font-semibold text-center">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="debitNoteTable" class="divide-y divide-gray-200">
+                    <tbody id="proformaTable" class="divide-y divide-gray-200">
                         <!-- Items will be added here dynamically -->
                     </tbody>
                 </table>
             </div>
-
-            <!-- Debit Note Summary -->
+            
+            <!-- Proforma Summary -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border-t">
                 <div>
                     <h3 class="text-lg font-semibold text-[#003F59] mb-3">Additional Details</h3>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Return/Adjustment Details</label>
-                        <textarea id="returnDetails"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]"
-                            rows="2" placeholder="Details about the return or adjustment..."></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Shipping Info</label>
+                        <textarea id="shippingInfo" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" rows="2" placeholder="Shipping address, carrier, delivery terms"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                        <textarea id="debitNoteNotes"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]"
-                            rows="2" placeholder="Any additional notes..."></textarea>
+                        <textarea id="proformaNotes" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003F59]" rows="2" placeholder="Any additional notes..."></textarea>
                     </div>
                 </div>
-
+                
                 <div>
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex justify-between py-2">
-                            <span class="font-medium">Total Original Amount:</span>
-                            <span id="originalAmount" class="font-medium">0.00</span>
+                            <span class="font-medium">Subtotal:</span>
+                            <span id="subtotal" class="font-medium">0.00</span>
                         </div>
-
+                        
                         <div class="flex justify-between py-2">
-                            <span class="font-medium">Total Adjustment:</span>
-                            <span id="totalAdjustment" class="font-medium">0.00</span>
+                            <span class="font-medium">Total Discount:</span>
+                            <span id="totalDiscount" class="font-medium">0.00</span>
                         </div>
-
+                        
                         <div class="flex justify-between py-2">
-                            <span class="font-medium">Taxable Debit Amount:</span>
-                            <span id="taxableDebit" class="font-medium">0.00</span>
+                            <span class="font-medium">Taxable Amount:</span>
+                            <span id="taxableAmount" class="font-medium">0.00</span>
                         </div>
-
+                        
                         <div class="border-t border-gray-200 pt-2">
                             <div class="flex justify-between py-1">
-                                <span class="font-medium">CGST Debit (9%):</span>
-                                <span id="cgstDebit" class="font-medium">0.00</span>
+                                <span class="font-medium">CGST (9%):</span>
+                                <span id="cgstAmount" class="font-medium">0.00</span>
                             </div>
                             <div class="flex justify-between py-1">
-                                <span class="font-medium">SGST Debit (9%):</span>
-                                <span id="sgstDebit" class="font-medium">0.00</span>
+                                <span class="font-medium">SGST (9%):</span>
+                                <span id="sgstAmount" class="font-medium">0.00</span>
                             </div>
                         </div>
-
+                        
                         <div class="flex justify-between py-2 border-t border-gray-200">
-                            <span class="font-medium">Other Charges:</span>
-                            <input id="otherCharges" type="number" value="0" min="0"
-                                class="w-24 px-2 py-1 border rounded text-right">
+                            <span class="font-medium">Shipping Charges:</span>
+                            <input id="shippingCharges" type="number" value="0" min="0" 
+                                   class="w-24 px-2 py-1 border rounded text-right">
                         </div>
-
-                        <div
-                            class="flex justify-between py-2 border-t border-gray-200 text-lg font-bold text-[#5E3023]">
-                            <span>TOTAL DEBIT NOTE:</span>
-                            <span id="totalDebitNote">0.00</span>
+                        
+                        <div class="flex justify-between py-2 border-t border-gray-200 text-lg font-bold text-[#4A6FA5]">
+                            <span>TOTAL AMOUNT:</span>
+                            <span id="grandTotal">0.00</span>
                         </div>
-
+                        
                         <div class="grid grid-cols-2 gap-2 mt-4">
-                            <button onclick="saveDebitNote()"
-                                class="bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 flex items-center justify-center">
+                            <button onclick="saveProforma()" 
+                                    class="bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 flex items-center justify-center">
                                 <i class="ph ph-floppy-disk mr-2"></i> Save
                             </button>
-                            <button onclick="printDebitNote()"
-                                class="bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#5E3023] flex items-center justify-center">
+                            <button onclick="printProforma()" 
+                                    class="bg-[#003F59] text-white py-2 rounded-lg hover:bg-[#4A6FA5] flex items-center justify-center">
                                 <i class="ph ph-printer mr-2"></i> Print
                             </button>
                         </div>
@@ -488,67 +470,52 @@
         </div>
     </div>
 
-    <!-- Add Supplier Modal -->
-    <div id="addSupplierModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                 <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div
-                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Supplier</h3>
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Customer</h3>
                             <div class="grid grid-cols-1 gap-4">
                                 <div>
-                                    <label for="supplierNameInput"
-                                        class="block text-sm font-medium text-gray-700">Supplier Name</label>
-                                    <input type="text" id="supplierNameInput"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                    <label for="customerNameInput" class="block text-sm font-medium text-gray-700">Customer Name</label>
+                                    <input type="text" id="customerNameInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
                                 </div>
                                 <div>
-                                    <label for="supplierContactInput"
-                                        class="block text-sm font-medium text-gray-700">Contact Person</label>
-                                    <input type="text" id="supplierContactInput"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                    <label for="customerContactInput" class="block text-sm font-medium text-gray-700">Contact Person</label>
+                                    <input type="text" id="customerContactInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
                                 </div>
                                 <div>
-                                    <label for="supplierPhoneInput"
-                                        class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <input type="text" id="supplierPhoneInput"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                    <label for="customerPhoneInput" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                    <input type="text" id="customerPhoneInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
                                 </div>
                                 <div>
-                                    <label for="supplierEmailInput"
-                                        class="block text-sm font-medium text-gray-700">Email</label>
-                                    <input type="email" id="supplierEmailInput"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                    <label for="customerEmailInput" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="customerEmailInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
                                 </div>
                                 <div>
-                                    <label for="supplierGstinInput"
-                                        class="block text-sm font-medium text-gray-700">GSTIN</label>
-                                    <input type="text" id="supplierGstinInput"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
+                                    <label for="customerGstinInput" class="block text-sm font-medium text-gray-700">GSTIN</label>
+                                    <input type="text" id="customerGstinInput" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm">
                                 </div>
                                 <div>
-                                    <label for="supplierAddressInput"
-                                        class="block text-sm font-medium text-gray-700">Address</label>
-                                    <textarea id="supplierAddressInput" rows="2"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm"></textarea>
+                                    <label for="customerAddressInput" class="block text-sm font-medium text-gray-700">Address</label>
+                                    <textarea id="customerAddressInput" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#003F59] focus:border-[#003F59] sm:text-sm"></textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" onclick="saveSupplier()"
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#003F59] text-base font-medium text-white hover:bg-[#005577] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:ml-3 sm:w-auto sm:text-sm">
-                        Save Supplier
+                    <button type="button" onclick="saveCustomer()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#003F59] text-base font-medium text-white hover:bg-[#005577] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:ml-3 sm:w-auto sm:text-sm">
+                        Save Customer
                     </button>
-                    <button type="button" onclick="hideAddSupplierModal()"
-                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="hideAddCustomerModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003F59] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Cancel
                     </button>
                 </div>
@@ -558,182 +525,183 @@
 
     <script>
         // Global variables
-        let debitItems = [];
-        let currentSupplier = null;
-
+        let proformaItems = [];
+        let currentCustomer = null;
+        
         // DOM Ready
-        document.addEventListener('DOMContentLoaded', function () {
-            // Set up supplier selection
-            document.getElementById('supplierSelect').addEventListener('change', function () {
-                updateSupplierDetails(this.value);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up customer selection
+            document.getElementById('customerSelect').addEventListener('change', function() {
+                updateCustomerDetails(this.value);
             });
-
+            
             // Set up keyboard shortcuts
-            document.getElementById('itemSearch').addEventListener('keypress', function (e) {
+            document.getElementById('itemSearch').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     addItem();
                 }
             });
-
-            // Set up other charges input
-            document.getElementById('otherCharges').addEventListener('input', updateDebitTotal);
-
+            
+            // Set up shipping charges input
+            document.getElementById('shippingCharges').addEventListener('input', updateTotal);
+            
             // Set focus to search field
             document.getElementById('itemSearch').focus();
         });
-
+        
         // Toggle sidebar
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('show');
-
+            
             if (sidebar.classList.contains('-translate-x-full')) {
                 document.body.style.overflow = 'auto';
             } else {
                 document.body.style.overflow = 'hidden';
             }
         }
-
+        
         // Logout function
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
+            if(confirm('Are you sure you want to logout?')) {
                 window.location.href = '/logout';
             }
         }
-
+        
         // Navigation function
         function navigateTo(page) {
             console.log(`Navigating to ${page}`);
             // Actual navigation would be implemented here
         }
-
-        // Supplier functions
-        function updateSupplierDetails(supplierId) {
-            const supplierDetails = document.getElementById('supplierDetails');
-
-            if (supplierId === '1') {
-                // ABC Wholesalers
-                document.getElementById('supplierName').textContent = 'ABC Wholesalers';
-                document.getElementById('supplierContact').textContent = 'Rajesh Kumar (+91 9876543210)';
-                document.getElementById('supplierGstin').textContent = '22ABCDE1234F1Z5';
-                document.getElementById('supplierAddress').textContent = '123 Wholesale Market, Industrial Area, Mumbai';
-                supplierDetails.classList.remove('hidden');
-                currentSupplier = supplierId;
+        
+        // Customer functions
+        function updateCustomerDetails(customerId) {
+            const customerDetails = document.getElementById('customerDetails');
+            
+            if (customerId === '1') {
+                // ABC Traders
+                document.getElementById('customerName').textContent = 'ABC Traders';
+                document.getElementById('customerContact').textContent = 'Ramesh Patel (+91 9876543210)';
+                document.getElementById('customerGstin').textContent = '22ABCDE1234F1Z5';
+                document.getElementById('customerAddress').textContent = '123 Trade Center, Business District, Mumbai';
+                customerDetails.classList.remove('hidden');
+                currentCustomer = customerId;
+            } 
+            else if (customerId === '2') {
+                // XYZ Enterprises
+                document.getElementById('customerName').textContent = 'XYZ Enterprises';
+                document.getElementById('customerContact').textContent = 'Suresh Kumar (+91 9876543211)';
+                document.getElementById('customerGstin').textContent = '27XYZDE1234F1Z5';
+                document.getElementById('customerAddress').textContent = '456 Corporate Park, Navi Mumbai';
+                customerDetails.classList.remove('hidden');
+                currentCustomer = customerId;
             }
-            else if (supplierId === '2') {
-                // XYZ Distributors
-                document.getElementById('supplierName').textContent = 'XYZ Distributors';
-                document.getElementById('supplierContact').textContent = 'Priya Sharma (+91 9876543211)';
-                document.getElementById('supplierGstin').textContent = '27XYZDE1234F1Z5';
-                document.getElementById('supplierAddress').textContent = '456 Distribution Center, Navi Mumbai';
-                supplierDetails.classList.remove('hidden');
-                currentSupplier = supplierId;
-            }
-            else if (supplierId === '3') {
-                // Global Imports
-                document.getElementById('supplierName').textContent = 'Global Imports';
-                document.getElementById('supplierContact').textContent = 'Amit Patel (+91 9876543212)';
-                document.getElementById('supplierGstin').textContent = '29GLOBE1234F1Z5';
-                document.getElementById('supplierAddress').textContent = '789 Import Zone, Mumbai Port';
-                supplierDetails.classList.remove('hidden');
-                currentSupplier = supplierId;
+            else if (customerId === '3') {
+                // Global Retail
+                document.getElementById('customerName').textContent = 'Global Retail';
+                document.getElementById('customerContact').textContent = 'Mohan Sharma (+91 9876543212)';
+                document.getElementById('customerGstin').textContent = '29GLOBE1234F1Z5';
+                document.getElementById('customerAddress').textContent = '789 Retail Plaza, Mumbai';
+                customerDetails.classList.remove('hidden');
+                currentCustomer = customerId;
             }
             else {
-                supplierDetails.classList.add('hidden');
-                currentSupplier = null;
+                customerDetails.classList.add('hidden');
+                currentCustomer = null;
             }
         }
-
-        function showAddSupplierModal() {
-            document.getElementById('addSupplierModal').classList.remove('hidden');
+        
+        function showAddCustomerModal() {
+            document.getElementById('addCustomerModal').classList.remove('hidden');
         }
-
-        function hideAddSupplierModal() {
-            document.getElementById('addSupplierModal').classList.add('hidden');
+        
+        function hideAddCustomerModal() {
+            document.getElementById('addCustomerModal').classList.add('hidden');
         }
-
-        function saveSupplier() {
-            const name = document.getElementById('supplierNameInput').value;
+        
+        function saveCustomer() {
+            const name = document.getElementById('customerNameInput').value;
             if (name) {
                 // In a real app, this would save to database
-                alert(`New supplier "${name}" added successfully!`);
-                hideAddSupplierModal();
-                // Refresh supplier list - in real app would reload from API
+                alert(`New customer "${name}" added successfully!`);
+                hideAddCustomerModal();
+                // Refresh customer list - in real app would reload from API
             } else {
-                alert('Please enter supplier name');
+                alert('Please enter customer name');
             }
         }
-
+        
         // Item functions
         function addItem() {
             const itemName = document.getElementById('itemSearch').value.trim();
             const price = parseFloat(document.getElementById('itemPrice').value) || 0;
             const qty = parseInt(document.getElementById('itemQty').value) || 1;
             const gstRate = parseInt(document.getElementById('gstRate').value) || 0;
-            const adjustment = parseFloat(document.getElementById('itemAdjustment').value) || 100;
-
+            const discount = parseFloat(document.getElementById('itemDiscount').value) || 0;
+            
             if (itemName && price > 0 && qty > 0) {
                 // Calculate item values
-                const originalAmount = price * qty;
-                const debitAmount = (originalAmount * adjustment) / 100;
+                const grossAmount = price * qty;
+                const discountAmount = (grossAmount * discount) / 100;
+                const taxableValue = grossAmount - discountAmount;
                 const cgstRate = gstRate / 2;
                 const sgstRate = gstRate / 2;
-
-                const cgstDebit = (debitAmount * cgstRate) / 100;
-                const sgstDebit = (debitAmount * sgstRate) / 100;
-
-                const totalDebit = debitAmount + cgstDebit + sgstDebit;
-
-                // Add to debit items
-                debitItems.push({
+                
+                const cgstAmount = (taxableValue * cgstRate) / 100;
+                const sgstAmount = (taxableValue * sgstRate) / 100;
+                
+                const totalAmount = taxableValue + cgstAmount + sgstAmount;
+                
+                // Add to proforma items
+                proformaItems.push({
                     id: Math.random().toString(36).substr(2, 9),
                     name: itemName,
                     price: price,
                     qty: qty,
                     gstRate: gstRate,
-                    adjustment: adjustment,
-                    originalAmount: originalAmount,
-                    debitAmount: debitAmount,
-                    cgstDebit: cgstDebit,
-                    sgstDebit: sgstDebit,
-                    totalDebit: totalDebit
+                    discount: discount,
+                    discountAmount: discountAmount,
+                    taxableValue: taxableValue,
+                    cgstAmount: cgstAmount,
+                    sgstAmount: sgstAmount,
+                    total: totalAmount
                 });
-
-                updateDebitTable();
-
+                
+                updateProformaTable();
+                
                 // Reset input fields
                 document.getElementById('itemSearch').value = '';
                 document.getElementById('itemPrice').value = '';
                 document.getElementById('itemQty').value = '1';
-                document.getElementById('itemAdjustment').value = '100';
+                document.getElementById('itemDiscount').value = '0';
                 document.getElementById('itemSearch').focus();
             }
         }
-
-        function updateDebitTable() {
-            const table = document.getElementById('debitNoteTable');
+        
+        function updateProformaTable() {
+            const table = document.getElementById('proformaTable');
             table.innerHTML = '';
-
-            if (debitItems.length === 0) {
+            
+            if (proformaItems.length === 0) {
                 table.innerHTML = `<tr class="bg-gray-50"><td colspan="9" class="p-4 text-center text-gray-500">No items added yet</td></tr>`;
             } else {
-                debitItems.forEach((item, index) => {
-                    const gstBadge = item.gstRate > 0 ?
-                        `<span class="reason-badge bg-blue-100 text-blue-800">${item.gstRate}% GST</span>` :
-                        `<span class="reason-badge bg-gray-100 text-gray-800">Exempt</span>`;
-
+                proformaItems.forEach((item, index) => {
+                    const gstBadge = item.gstRate > 0 ? 
+                        `<span class="tax-badge bg-blue-100 text-blue-800">${item.gstRate}% GST</span>` : 
+                        `<span class="tax-badge bg-gray-100 text-gray-800">Exempt</span>`;
+                    
                     table.innerHTML += `
-                        <tr class="debit-note-item-row hover:bg-gray-50">
+                        <tr class="proforma-item-row hover:bg-gray-50">
                             <td class="p-3 text-center">${index + 1}</td>
                             <td class="p-3 font-medium">${item.name}</td>
                             <td class="p-3 text-right">${item.qty}</td>
                             <td class="p-3 text-right">${item.price.toFixed(2)}</td>
-                            <td class="p-3 text-right">${item.adjustment}% (${(item.originalAmount - item.debitAmount).toFixed(2)})</td>
-                            <td class="p-3 text-right">${item.debitAmount.toFixed(2)}</td>
+                            <td class="p-3 text-right">${item.discount}% (${item.discountAmount.toFixed(2)})</td>
+                            <td class="p-3 text-right">${item.taxableValue.toFixed(2)}</td>
                             <td class="p-3 text-center">${gstBadge}</td>
-                            <td class="p-3 text-right">${item.totalDebit.toFixed(2)}</td>
+                            <td class="p-3 text-right">${item.total.toFixed(2)}</td>
                             <td class="p-3 text-center">
                                 <button onclick="removeItem(${index})" class="remove-btn text-red-500 hover:text-red-700">
                                     <i class="ph ph-trash"></i>
@@ -743,85 +711,82 @@
                     `;
                 });
             }
-
-            updateDebitTotal();
+            
+            updateTotal();
         }
-
+        
         function removeItem(index) {
-            debitItems.splice(index, 1);
-            updateDebitTable();
+            proformaItems.splice(index, 1);
+            updateProformaTable();
         }
-
-        function updateDebitTotal() {
-            const originalAmount = debitItems.reduce((sum, item) => sum + item.originalAmount, 0);
-            const totalAdjustment = debitItems.reduce((sum, item) => sum + (item.originalAmount - item.debitAmount), 0);
-            const taxableDebit = debitItems.reduce((sum, item) => sum + item.debitAmount, 0);
-
-            const totalCgst = debitItems.reduce((sum, item) => sum + item.cgstDebit, 0);
-            const totalSgst = debitItems.reduce((sum, item) => sum + item.sgstDebit, 0);
-
-            const otherCharges = parseFloat(document.getElementById('otherCharges').value) || 0;
-            const totalDebitNote = taxableDebit + totalCgst + totalSgst + otherCharges;
-
+        
+        function updateTotal() {
+            const subtotal = proformaItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const totalDiscount = proformaItems.reduce((sum, item) => sum + item.discountAmount, 0);
+            const taxableAmount = proformaItems.reduce((sum, item) => sum + item.taxableValue, 0);
+            
+            const totalCgst = proformaItems.reduce((sum, item) => sum + item.cgstAmount, 0);
+            const totalSgst = proformaItems.reduce((sum, item) => sum + item.sgstAmount, 0);
+            
+            const shippingCharges = parseFloat(document.getElementById('shippingCharges').value) || 0;
+            const grandTotal = taxableAmount + totalCgst + totalSgst + shippingCharges;
+            
             // Update summary fields
-            document.getElementById('originalAmount').textContent = originalAmount.toFixed(2);
-            document.getElementById('totalAdjustment').textContent = totalAdjustment.toFixed(2);
-            document.getElementById('taxableDebit').textContent = taxableDebit.toFixed(2);
-
-            document.getElementById('cgstDebit').textContent = totalCgst.toFixed(2);
-            document.getElementById('sgstDebit').textContent = totalSgst.toFixed(2);
-
-            document.getElementById('totalDebitNote').textContent = totalDebitNote.toFixed(2);
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('totalDiscount').textContent = totalDiscount.toFixed(2);
+            document.getElementById('taxableAmount').textContent = taxableAmount.toFixed(2);
+            
+            document.getElementById('cgstAmount').textContent = totalCgst.toFixed(2);
+            document.getElementById('sgstAmount').textContent = totalSgst.toFixed(2);
+            
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
         }
-
-        // Debit Note functions
-        function saveDebitNote() {
-            if (debitItems.length === 0) {
-                alert('Please add items to the debit note before saving');
+        
+        // Proforma functions
+        function saveProforma() {
+            if (proformaItems.length === 0) {
+                alert('Please add items to the proforma invoice before saving');
                 return;
             }
-
-            if (!currentSupplier) {
-                alert('Please select a supplier');
+            
+            if (!currentCustomer) {
+                alert('Please select a customer');
                 return;
             }
-
-            const originalInvoice = document.getElementById('originalInvoice').value;
-            if (!originalInvoice) {
-                alert('Please enter original invoice number');
-                return;
-            }
-
+            
             // In a real app, this would send data to the server
-            const debitNoteData = {
-                debitNoteNumber: document.getElementById('debitNoteNumber').textContent,
-                debitNoteDate: document.getElementById('debitNoteDateInput').value,
-                supplier: currentSupplier,
-                originalInvoice: originalInvoice,
-                reason: document.getElementById('reason').value,
-                items: debitItems,
-                returnDetails: document.getElementById('returnDetails').value,
-                notes: document.getElementById('debitNoteNotes').value,
+            const proformaData = {
+                proformaNumber: document.getElementById('proformaNumber').textContent,
+                proformaDate: document.getElementById('proformaDateInput').value,
+                validUntil: document.getElementById('validUntilInput').value,
+                customer: currentCustomer,
+                items: proformaItems,
+                shippingInfo: document.getElementById('shippingInfo').value,
+                notes: document.getElementById('proformaNotes').value,
+                paymentTerms: document.getElementById('paymentTerms').value,
                 referenceNo: document.getElementById('referenceNo').value
             };
-
-            console.log('Saving debit note:', debitNoteData);
-            alert('Debit note saved successfully!');
+            
+            console.log('Saving proforma invoice:', proformaData);
+            alert('Proforma invoice saved successfully!');
         }
-
-        function printDebitNote() {
-            if (debitItems.length === 0) {
-                alert('Please add items to the debit note before printing');
+        
+        function printProforma() {
+            if (proformaItems.length === 0) {
+                alert('Please add items to the proforma invoice before printing');
                 return;
             }
-
-            if (!currentSupplier) {
-                alert('Please select a supplier');
+            
+            if (!currentCustomer) {
+                alert('Please select a customer');
                 return;
             }
+            
+            // In a real app, this would generate a printable proforma invoice
+            console.log('Printing proforma invoice...');
+            alert('Proforma invoice printed successfully!');
         }
     </script>
     <script src="/static/js/sb_scripts.js"></script>
 </body>
-
 </html>
